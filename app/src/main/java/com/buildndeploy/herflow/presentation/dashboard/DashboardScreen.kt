@@ -255,6 +255,7 @@ private fun HomeScreen(onSectionChange: (AppSection) -> Unit) {
                             Text(label, color = Color(0xFF15803D), style = MaterialTheme.typography.bodySmall)
                         }
                     }
+                    Text("  Log your cycle data to get personalized insights.", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }
