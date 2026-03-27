@@ -5,20 +5,22 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -50,6 +52,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,14 +68,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 
 private val AppBackground = Color(0xFFF2EEF8)
 private val CardBackground = Color(0xFFFCFCFD)
 private val BorderColor = Color(0xFFE4DCEB)
-private val BrandPink = Color(0xFFFF2FA6)
-private val BrandPurple = Color(0xFF9546FF)
-private val TextMuted = Color(0xFF4A5568)
-private val DarkAction = Color(0xFF020228)
+private val BrandPink = Color(0xFFF6249B)
+private val BrandPurple = Color(0xFF9D3DF2)
+private val TextPrimary = Color(0xFF0E1525)
+private val TextMuted = Color(0xFF4D5A72)
+private val DarkAction = Color(0xFF05072D)
 
 private enum class AppSection(val title: String, val icon: ImageVector) {
     Home("Home", Icons.Outlined.Home),
@@ -151,6 +156,7 @@ private fun AppTopBar(showClose: Boolean, onMenuClick: () -> Unit) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .statusBarsPadding()
                 .height(72.dp)
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -190,7 +196,8 @@ private fun DrawerPanel(
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .width(245.dp)
+            .fillMaxWidth(0.52f)
+            .widthIn(min = 220.dp, max = 300.dp)
             .background(Color.White)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -238,7 +245,7 @@ private fun ScreenContent(
         modifier = Modifier.fillMaxSize()
     ) {
         val horizontalPadding = if (maxWidth > 700.dp) 36.dp else 12.dp
-        val contentWidth = if (maxWidth > 900.dp) 850.dp else Dp.Unspecified
+        val contentWidth = if (maxWidth > 900.dp) 860.dp else Dp.Unspecified
 
         Box(
             modifier = Modifier
@@ -276,13 +283,13 @@ private fun HomeScreen() {
                     Text(
                         text = "Welcome to HerFlow!",
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.ExtraBold,
+                        fontWeight = FontWeight.Bold,
                         color = Color(0xFFB628B3)
                     )
                     Text(
                         text = "Start tracking your cycle to get personalized insights,\npredictions, and understand your body better.",
                         color = TextMuted,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 8.dp)
                     )
@@ -290,7 +297,7 @@ private fun HomeScreen() {
                         onClick = {},
                         shape = RoundedCornerShape(999.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+                        contentPadding = PaddingValues(0.dp),
                         modifier = Modifier
                             .padding(top = 20.dp)
                             .background(
@@ -303,7 +310,12 @@ private fun HomeScreen() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(Icons.Outlined.FavoriteBorder, null, tint = Color.White)
-                            Text("Log Your First Period", color = Color.White, modifier = Modifier.padding(start = 8.dp))
+                            Text(
+                                "Log Your First Period",
+                                color = Color.White,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
                         }
                     }
                 }
@@ -325,10 +337,10 @@ private fun CycleTrackerScreen(onNewCycle: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(Icons.Outlined.CalendarMonth, null, tint = Color(0xFFC9CDD6), modifier = Modifier.size(52.dp))
-                Text("No cycles tracked yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text("No cycles tracked yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
                 Text(
                     "Start by logging your first period to get personalized insights",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = TextMuted,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 10.dp)
@@ -347,8 +359,8 @@ private fun DailyLogScreen(onSave: () -> Unit) {
     )
 
     Column {
-        Text("Daily Log", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold)
-        Text("Track your symptoms, mood, and fertility signs", color = TextMuted, style = MaterialTheme.typography.titleMedium)
+        Text("Daily Log", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text("Track your symptoms, mood, and fertility signs", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(14.dp))
 
         Column(
@@ -393,7 +405,7 @@ private fun DailyLogScreen(onSave: () -> Unit) {
                                     .size(18.dp)
                                     .border(1.dp, Color(0xFFD1D5DC), RoundedCornerShape(4.dp))
                             )
-                            Text(label, modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.titleMedium)
+                            Text(label, modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 }
@@ -402,10 +414,10 @@ private fun DailyLogScreen(onSave: () -> Unit) {
             CardContainer {
                 Text("Energy & Sleep", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(10.dp))
-                Text("Energy Level", style = MaterialTheme.typography.titleMedium)
+                Text("Energy Level", style = MaterialTheme.typography.bodyLarge)
                 FieldPill("Normal", Icons.Outlined.Insights)
                 Spacer(Modifier.height(8.dp))
-                Text("Sleep Quality", style = MaterialTheme.typography.titleMedium)
+                Text("Sleep Quality", style = MaterialTheme.typography.bodyLarge)
                 FieldPill("Okay", Icons.Outlined.Insights)
             }
 
@@ -425,8 +437,8 @@ private fun DailyLogScreen(onSave: () -> Unit) {
 @Composable
 private fun CalendarScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Calendar", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold)
-        Text("Visual overview of your cycle", color = TextMuted, style = MaterialTheme.typography.titleMedium)
+        Text("Calendar", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text("Visual overview of your cycle", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
         CardContainer {
             val labels = listOf(
                 "Period" to Color(0xFFFF3B45),
@@ -440,7 +452,7 @@ private fun CalendarScreen() {
                     row.forEach { (label, color) ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(modifier = Modifier.size(16.dp).background(color, RoundedCornerShape(4.dp)))
-                            Text(label, modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.titleMedium)
+                            Text(label, modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 }
@@ -448,7 +460,7 @@ private fun CalendarScreen() {
         }
         CardContainer {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("March 2026", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                Text("March 2026", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 Spacer(Modifier.weight(1f))
                 SmallChip("‹")
                 SmallChip("Today")
@@ -492,13 +504,13 @@ private fun CalendarScreen() {
 @Composable
 private fun AnalyticsScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Analytics", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold)
-        Text("Track your patterns and trends", color = TextMuted, style = MaterialTheme.typography.titleMedium)
+        Text("Analytics", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text("Track your patterns and trends", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
         CardContainer {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.Analytics, null, tint = Color(0xFFC9CDD6), modifier = Modifier.size(46.dp))
-                Text("No data yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text("Start tracking your cycle and daily logs to see analytics", color = TextMuted, style = MaterialTheme.typography.titleMedium)
+                Text("No data yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                Text("Start tracking your cycle and daily logs to see analytics", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
@@ -511,8 +523,8 @@ private fun PartnerModeScreen() {
         CardContainer {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.FavoriteBorder, null, tint = Color(0xFFFFA8D9), modifier = Modifier.size(56.dp))
-                Text("No cycle data available", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text("Start tracking to enable partner view", color = TextMuted, style = MaterialTheme.typography.titleMedium)
+                Text("No cycle data available", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                Text("Start tracking to enable partner view", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
@@ -520,29 +532,74 @@ private fun PartnerModeScreen() {
 
 @Composable
 private fun SettingsScreen() {
-    Column {
-        Text("Settings", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold)
-        Text("Manage your preferences and reminders", color = TextMuted, style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(14.dp))
+    var pushNotificationsEnabled by remember { mutableStateOf(true) }
+    var pillReminderEnabled by remember { mutableStateOf(false) }
+    var wellnessTipsEnabled by remember { mutableStateOf(false) }
+    var toastMessage by remember { mutableStateOf<String?>(null) }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            SettingsBlock("Notifications", "Enable or disable app notifications", "Push Notifications", true)
-            SettingsBlock("Pill Reminder", "Daily contraceptive reminder", "Enable Daily Reminder", false)
-            SettingsBlock("Self-Care Reminders", "Phase-aware wellness tips", "Hydration & Wellness Tips", false)
+    LaunchedEffect(toastMessage) {
+        if (toastMessage != null) {
+            delay(2200)
+            toastMessage = null
+        }
+    }
+
+    Box {
+        Column {
+            Text("Settings", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text("Manage your preferences and reminders", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+            Spacer(Modifier.height(14.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                SettingsBlock(
+                    title = "Notifications",
+                    subtitle = "Enable or disable app notifications",
+                    switchLabel = "Push Notifications",
+                    switchSubtitle = "Receive cycle predictions and reminders",
+                    enabled = pushNotificationsEnabled,
+                    onToggle = { enabled ->
+                        pushNotificationsEnabled = enabled
+                        toastMessage = if (enabled) "Push notifications enabled" else "Push notifications disabled"
+                    }
+                )
+                PillReminderBlock(
+                    enabled = pillReminderEnabled,
+                    onToggle = { enabled ->
+                        pillReminderEnabled = enabled
+                        toastMessage = if (enabled) "Pill reminder enabled" else "Pill reminder disabled"
+                    }
+                )
+                SettingsBlock(
+                    title = "Self-Care Reminders",
+                    subtitle = "Phase-aware wellness tips",
+                    switchLabel = "Hydration & Wellness Tips",
+                    switchSubtitle = "Get personalized tips based on your cycle phase",
+                    enabled = wellnessTipsEnabled,
+                    onToggle = { enabled ->
+                        wellnessTipsEnabled = enabled
+                        toastMessage = if (enabled) "Self-care reminders enabled" else "Self-care reminders disabled"
+                    }
+                )
             CardContainer {
                 Text("Partner Mode", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                Text("Share cycle insights with your partner", color = TextMuted, style = MaterialTheme.typography.titleLarge)
+                Text("Share cycle insights with your partner", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "A supportive guide for partners to understand your cycle and be more helpful during each phase.",
+                    color = TextMuted,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = 12.dp)
+                )
                 Spacer(Modifier.height(14.dp))
                 OutlinedAction("View Partner Guide", Icons.Outlined.FavoriteBorder)
             }
             CardContainer {
                 Text("Data Management", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                Text("Export, import, or clear your data", color = TextMuted, style = MaterialTheme.typography.titleLarge)
+                Text("Export, import, or clear your data", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.height(14.dp))
                 OutlinedAction("Export Data (JSON)", Icons.Outlined.Insights)
                 Spacer(Modifier.height(10.dp))
@@ -555,13 +612,23 @@ private fun SettingsScreen() {
                 Text(
                     "HerFlow helps you track and understand your menstrual cycle with comprehensive logging features and intelligent predictions.",
                     color = TextMuted,
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.bodyLarge
                 )
                 Spacer(Modifier.height(12.dp))
                 Divider()
                 Text("Version 1.0.0", color = Color(0xFF687588), modifier = Modifier.padding(top = 10.dp))
             }
             Spacer(Modifier.height(10.dp))
+            }
+        }
+
+        toastMessage?.let { message ->
+            ToggleToast(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+                message = message
+            )
         }
     }
 }
@@ -570,8 +637,8 @@ private fun SettingsScreen() {
 private fun HeaderWithAction(title: String, subtitle: String, action: String, onClick: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold)
-            Text(subtitle, color = TextMuted, style = MaterialTheme.typography.titleMedium)
+            Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
         }
         Button(
             onClick = onClick,
@@ -606,8 +673,8 @@ private fun FeatureTile(icon: ImageVector, title: String, description: String, b
             Spacer(Modifier.weight(1f))
             Text(badge, color = badgeColor)
         }
-        Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
-        Text(description, style = MaterialTheme.typography.titleMedium, color = TextMuted)
+        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp), color = TextPrimary)
+        Text(description, style = MaterialTheme.typography.bodyLarge, color = TextMuted)
     }
 }
 
@@ -621,7 +688,7 @@ private fun FieldPill(text: String, icon: ImageVector) {
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text, style = MaterialTheme.typography.titleMedium)
+        Text(text, style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.weight(1f))
         Icon(icon, null, tint = Color(0xFF6D7482), modifier = Modifier.size(18.dp))
     }
@@ -641,34 +708,28 @@ private fun SmallChip(label: String) {
 }
 
 @Composable
-private fun SettingsBlock(title: String, subtitle: String, switchLabel: String, enabled: Boolean) {
+private fun SettingsBlock(
+    title: String,
+    subtitle: String,
+    switchLabel: String,
+    switchSubtitle: String,
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
     CardContainer {
         Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-        Text(subtitle, color = TextMuted, style = MaterialTheme.typography.titleLarge)
+        Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(18.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(switchLabel, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Medium)
+                Text(switchLabel, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium, color = TextPrimary)
                 Text(
-                    if (enabled) "Receive cycle predictions and reminders" else "Get notified at the same time every day",
+                    switchSubtitle,
                     color = TextMuted,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
-            Box(
-                modifier = Modifier
-                    .width(34.dp)
-                    .height(22.dp)
-                    .background(if (enabled) DarkAction else Color(0xFFD0D4DC), CircleShape)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(2.dp)
-                        .align(if (enabled) Alignment.CenterEnd else Alignment.CenterStart)
-                        .size(18.dp)
-                        .background(Color.White, CircleShape)
-                )
-            }
+            ToggleSwitch(enabled = enabled, onToggle = onToggle)
         }
     }
 }
@@ -683,6 +744,100 @@ private fun OutlinedAction(label: String, icon: ImageVector, tint: Color = Color
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(icon, null, tint = tint, modifier = Modifier.size(16.dp))
-        Text(label, modifier = Modifier.padding(start = 12.dp), color = tint, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
+        Text(label, modifier = Modifier.padding(start = 12.dp), color = tint, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
+private fun PillReminderBlock(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    CardContainer {
+        Text("Pill Reminder", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+        Text("Daily contraceptive reminder", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(18.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Enable Daily Reminder", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium, color = TextPrimary)
+                Text("Get notified at the same time every day", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+            }
+            ToggleSwitch(enabled = enabled, onToggle = onToggle)
+        }
+        if (enabled) {
+            Spacer(Modifier.height(14.dp))
+            Divider(color = BorderColor)
+            Spacer(Modifier.height(14.dp))
+            Text("Reminder Time", style = MaterialTheme.typography.bodyLarge, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(Color(0xFFF2F2F5), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("09:00", style = MaterialTheme.typography.titleMedium)
+                    Icon(Icons.Outlined.Insights, contentDescription = null, tint = Color(0xFF6D7482), modifier = Modifier.padding(start = 10.dp).size(14.dp))
+                }
+                Button(
+                    onClick = {},
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
+                ) {
+                    Text("Save")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToggleSwitch(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    Box(
+        modifier = Modifier
+            .width(34.dp)
+            .height(22.dp)
+            .background(if (enabled) DarkAction else Color(0xFFD0D4DC), CircleShape)
+            .clickable { onToggle(!enabled) }
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(2.dp)
+                .align(if (enabled) Alignment.CenterEnd else Alignment.CenterStart)
+                .size(18.dp)
+                .background(Color.White, CircleShape)
+        )
+    }
+}
+
+@Composable
+private fun ToggleToast(modifier: Modifier = Modifier, message: String) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8F9)),
+        shape = RoundedCornerShape(10.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E3E7))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier.size(18.dp).background(Color(0xFF111217), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("✓", color = Color.White, style = MaterialTheme.typography.bodySmall)
+            }
+            Text(
+                text = message,
+                color = TextPrimary,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 10.dp)
+            )
+        }
     }
 }
