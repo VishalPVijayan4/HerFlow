@@ -121,6 +121,7 @@ fun DashboardRoute(
     var showDrawer by remember { mutableStateOf(false) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             AppTopBar(
                 showClose = showDrawer,
@@ -556,6 +557,13 @@ private fun MoodPage(onSave: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun HomeScreen() {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        item { Spacer(Modifier.height(4.dp)) }
         item {
             CardContainer {
                 Text("Notes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
@@ -651,6 +659,8 @@ private fun BbtPage(onSave: () -> Unit) {
                     modifier = Modifier.padding(12.dp),
                     style = MaterialTheme.typography.bodyMedium
                 )
+                Spacer(Modifier.height(14.dp))
+                OutlinedAction("View Partner Guide", Icons.Outlined.FavoriteBorder)
             }
         }
         Button(
