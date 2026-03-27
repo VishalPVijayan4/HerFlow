@@ -159,6 +159,22 @@ internal fun CalendarScreen() {
                 }
             }
         }
+        CardContainer {
+            Text("Predictions for ${currentMonth.month.name.lowercase().replaceFirstChar { it.uppercase() }}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(10.dp))
+            Row(Modifier.fillMaxWidth()) {
+                Text("Ovulation", color = TextMuted)
+                Spacer(Modifier.weight(1f))
+                Text(currentMonth.atDay(16).format(DateTimeFormatter.ofPattern("MMM d")), fontWeight = FontWeight.SemiBold)
+            }
+            Spacer(Modifier.height(6.dp))
+            Row(Modifier.fillMaxWidth()) {
+                Text("Fertile Window", color = TextMuted)
+                Spacer(Modifier.weight(1f))
+                Text("${currentMonth.atDay(12).format(DateTimeFormatter.ofPattern("MMM d"))} - ${currentMonth.atDay(18).format(DateTimeFormatter.ofPattern("MMM d"))}", fontWeight = FontWeight.SemiBold)
+            }
+        }
+
     }
 }
 
