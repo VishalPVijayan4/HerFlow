@@ -242,6 +242,24 @@ private fun HomeScreen(onSectionChange: (AppSection) -> Unit) {
             }
         }
         item {
+            CardContainer {
+                Text("Today's Logs", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = Color(0xFF16A34A))
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    listOf("Symptoms ✓", "Mood ✓", "Mucus ✓", "BBT ✓").forEach { label ->
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFE9F9EF), RoundedCornerShape(999.dp))
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Text(label, color = Color(0xFF15803D), style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                    Text("  Log your cycle data to get personalized insights.", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+        item {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
