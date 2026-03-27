@@ -42,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.tv.material3.OutlinedButtonDefaults
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -91,7 +90,7 @@ internal fun CalendarScreen() {
                 OutlinedButton(
                     onClick = { currentMonth = currentMonth.minusMonths(1) },
                     shape = RoundedCornerShape(10.dp),
-                    colors = OutlinedButtonDefaults.outlinedButtonColors(contentColor = TextPrimary),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary),
                     border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) { Text("‹") }
@@ -102,7 +101,7 @@ internal fun CalendarScreen() {
                         selectedDate = today
                     },
                     shape = RoundedCornerShape(10.dp),
-                    colors = OutlinedButtonDefaults.outlinedButtonColors(contentColor = TextPrimary),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary),
                     border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
                 ) { Text("Today", fontWeight = FontWeight.SemiBold) }
@@ -110,7 +109,7 @@ internal fun CalendarScreen() {
                 OutlinedButton(
                     onClick = { currentMonth = currentMonth.plusMonths(1) },
                     shape = RoundedCornerShape(10.dp),
-                    colors = OutlinedButtonDefaults.outlinedButtonColors(contentColor = TextPrimary),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary),
                     border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) { Text("›") }
