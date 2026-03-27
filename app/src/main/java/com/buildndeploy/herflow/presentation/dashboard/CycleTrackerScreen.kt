@@ -34,6 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import java.time.LocalDate
 
+private data class TrackedCycle(
+    val startDate: LocalDate,
+    val endDate: LocalDate?
+)
+
 @Composable
 internal fun CycleTrackerScreen(
     onNewCycle: () -> Unit,
