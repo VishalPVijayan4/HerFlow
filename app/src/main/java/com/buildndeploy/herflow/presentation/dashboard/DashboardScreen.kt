@@ -104,6 +104,7 @@ fun DashboardRoute(
     var showDrawer by remember { mutableStateOf(false) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             AppTopBar(
                 showClose = showDrawer,
