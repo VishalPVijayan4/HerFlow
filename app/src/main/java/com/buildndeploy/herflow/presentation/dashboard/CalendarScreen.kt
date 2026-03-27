@@ -6,8 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,6 +26,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,11 +48,20 @@ import java.time.format.DateTimeFormatter
 @Composable
 internal fun CalendarScreen() {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var showCalendar by remember { mutableStateOf(false) }
+    var currentMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
+    val today = LocalDate.now()
+    val monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
+    val firstDayOffset = (currentMonth.atDay(1).dayOfWeek.value % 7)
+    val daysInMonth = currentMonth.lengthOfMonth()
+    val totalCells = ((firstDayOffset + daysInMonth + 6) / 7) * 7
+    val firstVisibleDate = currentMonth.atDay(1).minusDays(firstDayOffset.toLong())
 
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         Text("Calendar", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
-        Text("Visual overview of your cycle", color =  TextPrimary, style = MaterialTheme.typography.bodyLarge)
+        Text("Visual overview of your cycle", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
         CardContainer {
             val labels = listOf(
                 "Period" to Color(0xFFFF3B45),
@@ -69,21 +82,81 @@ internal fun CalendarScreen() {
             }
         }
         CardContainer {
-            Text("Selected: ${selectedDate.format(DisplayDateFormatter)}", color = TextPrimary, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(10.dp))
-            FieldPill(selectedDate.format(DisplayDateFormatter), Icons.Outlined.CalendarMonth) { showCalendar = true }
-        }
-    }
-
-    if (showCalendar) {
-        AppCalendarDialog(
-            initialDate = selectedDate,
-            onDismiss = { showCalendar = false },
-            onDateSelected = {
-                selectedDate = it
-                showCalendar = false
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(currentMonth.format(monthFormatter), fontWeight = FontWeight.Bold, color = TextPrimary, style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.weight(1f))
+                OutlinedButton(
+                    onClick = { currentMonth = currentMonth.minusMonths(1) },
+                    shape = RoundedCornerShape(10.dp),
+                    colors = OutlinedButtonDefaults.outlinedButtonColors(contentColor = TextPrimary),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                ) { Text("‹") }
+                Spacer(Modifier.size(8.dp))
+                OutlinedButton(
+                    onClick = {
+                        currentMonth = YearMonth.from(today)
+                        selectedDate = today
+                    },
+                    shape = RoundedCornerShape(10.dp),
+                    colors = OutlinedButtonDefaults.outlinedButtonColors(contentColor = TextPrimary),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                ) { Text("Today", fontWeight = FontWeight.SemiBold) }
+                Spacer(Modifier.size(8.dp))
+                OutlinedButton(
+                    onClick = { currentMonth = currentMonth.plusMonths(1) },
+                    shape = RoundedCornerShape(10.dp),
+                    colors = OutlinedButtonDefaults.outlinedButtonColors(contentColor = TextPrimary),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                ) { Text("›") }
             }
-        )
+            Spacer(Modifier.height(14.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach {
+                    Text(it, color = TextMuted, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(7),
+                modifier = Modifier.height(292.dp),
+                userScrollEnabled = false,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(totalCells) { index ->
+                    val date = firstVisibleDate.plusDays(index.toLong())
+                    val isCurrentMonth = date.month == currentMonth.month && date.year == currentMonth.year
+                    val isSelected = date == selectedDate
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(Color.White, RoundedCornerShape(10.dp))
+                            .border(
+                                1.4.dp,
+                                when {
+                                    isSelected -> BrandPink
+                                    else -> BorderColor
+                                },
+                                RoundedCornerShape(10.dp)
+                            )
+                            .clickable {
+                                selectedDate = date
+                                currentMonth = YearMonth.from(date)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = date.dayOfMonth.toString(),
+                            color = if (isCurrentMonth) TextPrimary else Color(0xFFCBD1DA),
+                            fontSize = 18.sp
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
