@@ -1,5 +1,7 @@
 package com.buildndeploy.herflow.presentation.dashboard
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +40,8 @@ import com.buildndeploy.herflow.domain.model.CycleEntry
 import com.buildndeploy.herflow.domain.model.FeatureCard
 import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardRoute(
     state: DashboardState = DashboardState(
@@ -87,6 +92,7 @@ fun DashboardRoute(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun DashboardContent(
     modifier: Modifier = Modifier,
@@ -207,6 +213,7 @@ private val previewCards = listOf(
     FeatureCard("Insights Hub", "Patterns that matter", "Get suggestions tailored to your trend.")
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 private val previewEntries = listOf(
     CycleEntry(1, java.time.LocalDate.now().minusDays(28), java.time.LocalDate.now().minusDays(23), 4, 3, "Low energy", "Sleep early for better recovery")
 )
