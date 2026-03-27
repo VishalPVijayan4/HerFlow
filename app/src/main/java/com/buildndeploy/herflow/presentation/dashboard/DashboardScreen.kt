@@ -64,6 +64,7 @@ fun DashboardRoute(
 ) {
     var selectedSection by remember { mutableStateOf(AppSection.Home) }
     var showDrawer by remember { mutableStateOf(false) }
+    var selectedLogDate by remember { mutableStateOf(LocalDate.now()) }
     val cycles = remember { mutableStateListOf(CycleRecord(LocalDate.of(2026, 2, 25), LocalDate.of(2026, 3, 1))) }
     val symptomsByDate = remember { mutableStateMapOf<LocalDate, SymptomsLogState>() }
     val moodsByDate = remember { mutableStateMapOf<LocalDate, MoodLogState>() }
@@ -94,7 +95,10 @@ fun DashboardRoute(
                 symptomsByDate = symptomsByDate,
                 moodsByDate = moodsByDate,
                 mucusByDate = mucusByDate,
-                bbtByDate = bbtByDate
+                bbtByDate = bbtByDate,
+                selectedLogDate = selectedLogDate,
+                onSelectedLogDateChange = { selectedLogDate = it },
+                onNavigateToSection = { selectedSection = it }
             )
 
             if (showDrawer) {
@@ -218,7 +222,10 @@ private fun ScreenContent(
     symptomsByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, SymptomsLogState>,
     moodsByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, MoodLogState>,
     mucusByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, MucusLogState>,
-    bbtByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, BbtLogState>
+    bbtByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, BbtLogState>,
+    selectedLogDate: LocalDate,
+    onSelectedLogDateChange: (LocalDate) -> Unit,
+    onNavigateToSection: (AppSection) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -244,8 +251,17 @@ private fun ScreenContent(
                     bbtCount = bbtByDate.size
                 )
                 AppSection.CycleTracker -> CycleTrackerScreen(onNewCycle, cycles)
-                AppSection.DailyLog -> DailyLogScreen(onSave, symptomsByDate, moodsByDate, mucusByDate, bbtByDate)
-                AppSection.Calendar -> CalendarScreen()
+                AppSection.DailyLog -> DailyLogScreen(onSave, selectedLogDate, symptomsByDate, moodsByDate, mucusByDate, bbtByDate)
+                AppSection.Calendar -> CalendarScreen(
+                    hasSymptoms = { symptomsByDate[it] != null },
+                    hasMood = { moodsByDate[it] != null },
+                    hasMucus = { mucusByDate[it] != null },
+                    hasBbt = { bbtByDate[it] != null },
+                    onAddEntry = { date ->
+                        onSelectedLogDateChange(date)
+                        onNavigateToSection(AppSection.DailyLog)
+                    }
+                )
                 AppSection.Analytics -> AnalyticsScreen()
                 AppSection.PartnerMode -> PartnerModeScreen()
                 AppSection.Settings -> SettingsScreen()
@@ -343,18 +359,6 @@ private fun HomeScreen(
                 Spacer(Modifier.height(12.dp))
                 Box(modifier = Modifier.fillMaxWidth().background(Color(0xFFE7F0FB), RoundedCornerShape(10.dp)).padding(12.dp)) {
                     Text("These predictions are estimates based on your cycle history. Not a substitute for medical advice.", color = Color(0xFF1D4ED8), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-        }
-        item {
-            CardContainer {
-                Text("Today's Insight", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.background(Color(0xFFF2F3F7), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text("unknown", color = TextMuted, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                    }
-                    Text("  Log your cycle data to get personalized insights.", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }
