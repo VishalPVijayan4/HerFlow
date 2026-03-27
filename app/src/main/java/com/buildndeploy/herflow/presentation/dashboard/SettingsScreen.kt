@@ -1,5 +1,6 @@
 package com.buildndeploy.herflow.presentation.dashboard
 
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -123,7 +124,7 @@ internal fun SettingsScreen() {
                     }
                 )
                 CardContainer {
-                    Text("Partner Mode", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                    Text("Partner Mode", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                     Text("Share cycle insights with your partner", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                     Text(
                         "A supportive guide for partners to understand your cycle and be more helpful during each phase.",
@@ -135,7 +136,7 @@ internal fun SettingsScreen() {
                     OutlinedAction("View Partner Guide", Icons.Outlined.FavoriteBorder)
                 }
                 CardContainer {
-                    Text("Data Management", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                    Text("Data Management", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                     Text("Export, import, or clear your data", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                     Spacer(Modifier.height(14.dp))
                     OutlinedAction("Export Data (JSON)", Icons.Outlined.Insights)
@@ -145,7 +146,7 @@ internal fun SettingsScreen() {
                     OutlinedAction("Clear All Data", Icons.Outlined.Close, Color.Red)
                 }
                 CardContainer {
-                    Text("About HerFlow", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                    Text("About HerFlow", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold,color = TextPrimary)
                     Text(
                         "HerFlow helps you track and understand your menstrual cycle with comprehensive logging features and intelligent predictions.",
                         color = TextMuted,
@@ -180,7 +181,7 @@ private fun SettingsBlock(
     onToggle: (Boolean) -> Unit
 ) {
     CardContainer {
-        Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+        Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
         Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(18.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {

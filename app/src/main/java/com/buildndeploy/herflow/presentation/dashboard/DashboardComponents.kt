@@ -38,7 +38,7 @@ internal fun HeaderWithAction(title: String, subtitle: String, action: String, o
     Column(modifier = Modifier.fillMaxWidth()) {
         Column {
             Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
-            Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+            Text(subtitle, color = TextPrimary, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
         }
         Spacer(Modifier.height(10.dp))
         Button(

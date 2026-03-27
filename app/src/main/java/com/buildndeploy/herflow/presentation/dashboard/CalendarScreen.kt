@@ -48,7 +48,7 @@ internal fun CalendarScreen() {
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Calendar", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
-        Text("Visual overview of your cycle", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+        Text("Visual overview of your cycle", color =  TextPrimary, style = MaterialTheme.typography.bodyLarge)
         CardContainer {
             val labels = listOf(
                 "Period" to Color(0xFFFF3B45),
