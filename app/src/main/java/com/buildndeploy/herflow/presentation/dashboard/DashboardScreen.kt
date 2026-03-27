@@ -228,58 +228,109 @@ private fun ScreenContent(
 
 @Composable
 private fun HomeScreen(onSectionChange: (AppSection) -> Unit) {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        item { Spacer(Modifier.height(4.dp)) }
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
-            CardContainer {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(Icons.Outlined.FavoriteBorder, null, tint = BrandPink, modifier = Modifier.size(64.dp))
-                    Text(
-                        text = "Welcome to HerFlow!",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB628B3)
-                    )
-                    Text(
-                        text = "Start tracking your cycle to get personalized insights,\npredictions, and understand your body better.",
-                        color = TextMuted,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                    Button(
-                        onClick = { onSectionChange(AppSection.CycleTracker) },
-                        shape = RoundedCornerShape(999.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
-                        modifier = Modifier
-                            .padding(top = 20.dp)
-                            .background(
-                                brush = Brush.horizontalGradient(listOf(BrandPink, BrandPurple)),
-                                shape = RoundedCornerShape(999.dp)
-                            )
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 22.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Outlined.FavoriteBorder, null, tint = Color.White)
-                            Text(
-                                "Log Your First Period",
-                                color = Color.White,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                QuickActionTile("Log Today", BrandPink, onClick = { onSectionChange(AppSection.DailyLog) }, modifier = Modifier.weight(1f))
+                QuickActionTile("Track Cycle", BrandPurple, onClick = { onSectionChange(AppSection.CycleTracker) }, modifier = Modifier.weight(1f))
+            }
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                QuickActionTile("View Stats", Color(0xFF2563EB), onClick = { onSectionChange(AppSection.Analytics) }, modifier = Modifier.weight(1f))
+                QuickActionTile("Calendar", Color(0xFF4F46E5), onClick = { onSectionChange(AppSection.Calendar) }, modifier = Modifier.weight(1f))
+            }
+        }
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Brush.linearGradient(listOf(Color(0xFFD946EF), BrandPurple)), RoundedCornerShape(14.dp))
+                    .padding(18.dp)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Current Phase", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
+                        Text("Unknown", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("Cycle Day", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
+                        Text("31", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
-        item { FeatureTile(Icons.Outlined.MonitorHeart, "Track Daily", "Log symptoms, moods, and fertility signs", "Open Daily Log", BrandPink) { onSectionChange(AppSection.DailyLog) } }
-        item { FeatureTile(Icons.Outlined.CalendarMonth, "View Calendar", "Visualize your cycle and patterns", "Open Calendar", BrandPurple) { onSectionChange(AppSection.Calendar) } }
-        item { Spacer(Modifier.height(12.dp)) }
+        item {
+            CardContainer {
+                Text("Fertility Status", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(12.dp))
+                Text("Low", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                Text("Fertility Score", color = TextMuted)
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth()) {
+                    Text("Ovulation", color = TextMuted)
+                    Spacer(Modifier.weight(1f))
+                    Text("Feb 16", fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.height(6.dp))
+                Row(Modifier.fillMaxWidth()) {
+                    Text("Fertile Window", color = TextMuted)
+                    Spacer(Modifier.weight(1f))
+                    Text("Feb 12 - Feb 18", fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.height(12.dp))
+                Box(modifier = Modifier.fillMaxWidth().background(Color(0xFFE7F0FB), RoundedCornerShape(10.dp)).padding(12.dp)) {
+                    Text("These predictions are estimates based on your cycle history. Not a substitute for medical advice.", color = Color(0xFF1D4ED8), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+        item {
+            CardContainer {
+                Text("Today's Insight", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.background(Color(0xFFF2F3F7), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                        Text("unknown", color = TextMuted, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    }
+                    Text("  Log your cycle data to get personalized insights.", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                StatCard("1", "Cycles Tracked", modifier = Modifier.weight(1f))
+                StatCard("7", "Symptom Logs", modifier = Modifier.weight(1f))
+            }
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                StatCard("10", "Mucus Logs", modifier = Modifier.weight(1f))
+                StatCard("24", "BBT Logs", modifier = Modifier.weight(1f))
+            }
+        }
+        item { Spacer(Modifier.height(10.dp)) }
     }
 }
+
+@Composable
+private fun QuickActionTile(title: String, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier = modifier
+            .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.75f))), RoundedCornerShape(14.dp))
+            .clickable { onClick() }
+            .padding(16.dp)
+    ) {
+        Text(title, color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun StatCard(value: String, label: String, modifier: Modifier = Modifier) {
+    CardContainer {
+        Column(modifier = modifier) {
+            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(label, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+}
+
