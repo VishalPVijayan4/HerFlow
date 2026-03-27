@@ -50,24 +50,21 @@ import java.time.LocalDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private data class SymptomsLog(val items: Set<String>, val notes: String)
-private data class MoodLog(val moods: Set<String>, val notes: String)
-private data class MucusLog(val type: String)
-private data class BbtLog(val temperature: String)
 
 @Composable
-internal fun DailyLogScreen(onSave: () -> Unit) {
+internal fun DailyLogScreen(
+    onSave: () -> Unit,
+    symptomsByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, SymptomsLogState>,
+    moodsByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, MoodLogState>,
+    mucusByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, MucusLogState>,
+    bbtByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, BbtLogState>
+) {
     val tabs = DailyLogTab.entries
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
-
-    val symptomsByDate = remember { mutableStateMapOf<LocalDate, SymptomsLog>() }
-    val moodsByDate = remember { mutableStateMapOf<LocalDate, MoodLog>() }
-    val mucusByDate = remember { mutableStateMapOf<LocalDate, MucusLog>() }
-    val bbtByDate = remember { mutableStateMapOf<LocalDate, BbtLog>() }
 
     LaunchedEffect(toastMessage) {
         if (toastMessage != null) {
@@ -182,7 +179,7 @@ internal fun DailyLogScreen(onSave: () -> Unit) {
 }
 
 @Composable
-private fun SymptomsPage(currentLog: SymptomsLog?, onSaveLog: (SymptomsLog) -> Unit) {
+private fun SymptomsPage(currentLog: SymptomsLogState?, onSaveLog: (SymptomsLogState) -> Unit) {
     val selectedItems = remember { mutableStateListOf<String>() }
     var notes by remember { mutableStateOf("") }
 
@@ -233,7 +230,7 @@ private fun SymptomsPage(currentLog: SymptomsLog?, onSaveLog: (SymptomsLog) -> U
             }
         }
         item {
-            Button(onClick = { onSaveLog(SymptomsLog(selectedItems.toSet(), notes)) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DarkAction), shape = RoundedCornerShape(10.dp)) {
+            Button(onClick = { onSaveLog(SymptomsLogState(selectedItems.toSet(), notes)) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DarkAction), shape = RoundedCornerShape(10.dp)) {
                 Text("Save Symptoms", color = Color.White)
             }
         }
@@ -241,7 +238,7 @@ private fun SymptomsPage(currentLog: SymptomsLog?, onSaveLog: (SymptomsLog) -> U
 }
 
 @Composable
-private fun MoodPage(currentLog: MoodLog?, onSaveLog: (MoodLog) -> Unit) {
+private fun MoodPage(currentLog: MoodLogState?, onSaveLog: (MoodLogState) -> Unit) {
     val moods = listOf("Happy" to "😊", "Calm" to "😌", "Anxious" to "😰", "Irritable" to "😤", "Sad" to "😢", "Sensitive" to "🥺", "Confident" to "😎")
     val selectedMoods = remember { mutableStateListOf<String>() }
     var notes by remember { mutableStateOf("") }
@@ -282,7 +279,7 @@ private fun MoodPage(currentLog: MoodLog?, onSaveLog: (MoodLog) -> Unit) {
             }
         }
         item {
-            Button(onClick = { onSaveLog(MoodLog(selectedMoods.toSet(), notes)) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DarkAction)) {
+            Button(onClick = { onSaveLog(MoodLogState(selectedMoods.toSet(), notes)) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DarkAction)) {
                 Text("Save Mood", color = Color.White)
             }
         }
@@ -290,7 +287,7 @@ private fun MoodPage(currentLog: MoodLog?, onSaveLog: (MoodLog) -> Unit) {
 }
 
 @Composable
-private fun MucusPage(currentLog: MucusLog?, onSaveLog: (MucusLog) -> Unit) {
+private fun MucusPage(currentLog: MucusLogState?, onSaveLog: (MucusLogState) -> Unit) {
     var selectedType by remember { mutableStateOf("Select mucus type") }
     var expanded by remember { mutableStateOf(false) }
     val options = listOf("Dry", "Sticky", "Creamy", "Egg-white (stretchy)", "Watery")
@@ -319,14 +316,14 @@ private fun MucusPage(currentLog: MucusLog?, onSaveLog: (MucusLog) -> Unit) {
                 }
             }
         }
-        Button(onClick = { onSaveLog(MucusLog(selectedType)) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DarkAction.copy(alpha = 0.55f)), enabled = selectedType != "Select mucus type") {
+        Button(onClick = { onSaveLog(MucusLogState(selectedType)) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DarkAction.copy(alpha = 0.55f)), enabled = selectedType != "Select mucus type") {
             Text("Save Cervical Mucus", color = Color.White)
         }
     }
 }
 
 @Composable
-private fun BbtPage(currentLog: BbtLog?, onSaveLog: (BbtLog) -> Unit) {
+private fun BbtPage(currentLog: BbtLogState?, onSaveLog: (BbtLogState) -> Unit) {
     var temperature by remember { mutableStateOf("36.5") }
 
     LaunchedEffect(currentLog) {
@@ -351,7 +348,7 @@ private fun BbtPage(currentLog: BbtLog?, onSaveLog: (BbtLog) -> Unit) {
                 OutlinedAction("View Partner Guide", Icons.Outlined.FavoriteBorder)
             }
         }
-        Button(onClick = { onSaveLog(BbtLog(temperature)) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DarkAction.copy(alpha = 0.60f))) {
+        Button(onClick = { onSaveLog(BbtLogState(temperature)) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = DarkAction.copy(alpha = 0.60f))) {
             Text("Save BBT", color = Color.White)
         }
     }

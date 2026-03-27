@@ -1,5 +1,6 @@
 package com.buildndeploy.herflow.presentation.dashboard
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.DeleteOutline
@@ -21,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,13 +40,12 @@ private data class TrackedCycle(
 )
 
 @Composable
-internal fun CycleTrackerScreen(onNewCycle: () -> Unit) {
+internal fun CycleTrackerScreen(
+    onNewCycle: () -> Unit,
+    cycles: androidx.compose.runtime.snapshots.SnapshotStateList<CycleRecord>
+) {
     var showCycleDialog by remember { mutableStateOf(false) }
-    val cycles = remember {
-        mutableStateListOf(
-            TrackedCycle(LocalDate.of(2026, 2, 25), LocalDate.of(2026, 3, 1))
-        )
-    }
+    var editingIndex by remember { mutableStateOf<Int?>(null) }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         HeaderWithAction(
@@ -57,7 +57,7 @@ internal fun CycleTrackerScreen(onNewCycle: () -> Unit) {
             showCycleDialog = true
         }
 
-        cycles.forEachIndexed { index, cycle ->
+        cycles.forEachIndexed { _, cycle ->
             CardContainer {
                 Row(verticalAlignment = Alignment.Top) {
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -67,13 +67,20 @@ internal fun CycleTrackerScreen(onNewCycle: () -> Unit) {
                         Text("Duration: $days days", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                         Text("Flow entries: $days days logged", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                     }
-                    Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = TextPrimary)
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = "Edit",
+                        tint = TextPrimary,
+                        modifier = Modifier.clickable { editingIndex = cycles.indexOf(cycle); showCycleDialog = true }
+                    )
                     Spacer(Modifier.padding(horizontal = 6.dp))
                     Icon(
                         Icons.Outlined.DeleteOutline,
                         contentDescription = "Delete",
                         tint = Color(0xFFEF4444),
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .clickable { cycles.remove(cycle) }
                     )
                 }
             }
@@ -82,12 +89,19 @@ internal fun CycleTrackerScreen(onNewCycle: () -> Unit) {
 
     if (showCycleDialog) {
         AddCycleDialog(
-            onDismiss = { showCycleDialog = false },
+            initialStartDate = editingIndex?.let { cycles[it].startDate },
+            initialEndDate = editingIndex?.let { cycles[it].endDate },
+            onDismiss = { showCycleDialog = false; editingIndex = null },
             onAdd = { start, end ->
                 val parsedStart = LocalDate.parse(start, DisplayDateFormatter)
                 val parsedEnd = end.takeIf { it.isNotBlank() }?.let { LocalDate.parse(it, DisplayDateFormatter) }
-                cycles.add(0, TrackedCycle(parsedStart, parsedEnd))
+                if (editingIndex != null) {
+                    cycles[editingIndex!!] = CycleRecord(parsedStart, parsedEnd)
+                } else {
+                    cycles.add(0, CycleRecord(parsedStart, parsedEnd))
+                }
                 showCycleDialog = false
+                editingIndex = null
             }
         )
     }
@@ -95,11 +109,13 @@ internal fun CycleTrackerScreen(onNewCycle: () -> Unit) {
 
 @Composable
 private fun AddCycleDialog(
+    initialStartDate: LocalDate? = null,
+    initialEndDate: LocalDate? = null,
     onDismiss: () -> Unit,
     onAdd: (String, String) -> Unit
 ) {
-    var startDate by remember { mutableStateOf<LocalDate?>(null) }
-    var endDate by remember { mutableStateOf<LocalDate?>(null) }
+    var startDate by remember(initialStartDate) { mutableStateOf(initialStartDate) }
+    var endDate by remember(initialEndDate) { mutableStateOf(initialEndDate) }
     var showStartPicker by remember { mutableStateOf(false) }
     var showEndPicker by remember { mutableStateOf(false) }
 

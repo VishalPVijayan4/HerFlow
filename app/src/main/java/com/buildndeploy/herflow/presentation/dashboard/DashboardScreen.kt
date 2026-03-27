@@ -37,6 +37,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -61,6 +64,11 @@ fun DashboardRoute(
 ) {
     var selectedSection by remember { mutableStateOf(AppSection.Home) }
     var showDrawer by remember { mutableStateOf(false) }
+    val cycles = remember { mutableStateListOf(CycleRecord(LocalDate.of(2026, 2, 25), LocalDate.of(2026, 3, 1))) }
+    val symptomsByDate = remember { mutableStateMapOf<LocalDate, SymptomsLogState>() }
+    val moodsByDate = remember { mutableStateMapOf<LocalDate, MoodLogState>() }
+    val mucusByDate = remember { mutableStateMapOf<LocalDate, MucusLogState>() }
+    val bbtByDate = remember { mutableStateMapOf<LocalDate, BbtLogState>() }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -81,7 +89,12 @@ fun DashboardRoute(
                 selectedSection = selectedSection,
                 onNewCycle = onRefresh,
                 onSave = { onIntent(DashboardIntent.Refresh) },
-                onSectionChange = { selectedSection = it }
+                onSectionChange = { selectedSection = it },
+                cycles = cycles,
+                symptomsByDate = symptomsByDate,
+                moodsByDate = moodsByDate,
+                mucusByDate = mucusByDate,
+                bbtByDate = bbtByDate
             )
 
             if (showDrawer) {
@@ -200,7 +213,12 @@ private fun ScreenContent(
     selectedSection: AppSection,
     onNewCycle: () -> Unit,
     onSave: () -> Unit,
-    onSectionChange: (AppSection) -> Unit
+    onSectionChange: (AppSection) -> Unit,
+    cycles: androidx.compose.runtime.snapshots.SnapshotStateList<CycleRecord>,
+    symptomsByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, SymptomsLogState>,
+    moodsByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, MoodLogState>,
+    mucusByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, MucusLogState>,
+    bbtByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, BbtLogState>
 ) {
     Box(
         modifier = Modifier
@@ -214,9 +232,19 @@ private fun ScreenContent(
                 .widthIn(max = 860.dp)
         ) {
             when (selectedSection) {
-                AppSection.Home -> HomeScreen(onSectionChange)
-                AppSection.CycleTracker -> CycleTrackerScreen(onNewCycle)
-                AppSection.DailyLog -> DailyLogScreen(onSave)
+                AppSection.Home -> HomeScreen(
+                    onSectionChange = onSectionChange,
+                    hasSymptoms = symptomsByDate[LocalDate.now()] != null,
+                    hasMood = moodsByDate[LocalDate.now()] != null,
+                    hasMucus = mucusByDate[LocalDate.now()] != null,
+                    hasBbt = bbtByDate[LocalDate.now()] != null,
+                    cyclesCount = cycles.size,
+                    symptomsCount = symptomsByDate.size,
+                    mucusCount = mucusByDate.size,
+                    bbtCount = bbtByDate.size
+                )
+                AppSection.CycleTracker -> CycleTrackerScreen(onNewCycle, cycles)
+                AppSection.DailyLog -> DailyLogScreen(onSave, symptomsByDate, moodsByDate, mucusByDate, bbtByDate)
                 AppSection.Calendar -> CalendarScreen()
                 AppSection.Analytics -> AnalyticsScreen()
                 AppSection.PartnerMode -> PartnerModeScreen()
@@ -227,7 +255,17 @@ private fun ScreenContent(
 }
 
 @Composable
-private fun HomeScreen(onSectionChange: (AppSection) -> Unit) {
+private fun HomeScreen(
+    onSectionChange: (AppSection) -> Unit,
+    hasSymptoms: Boolean,
+    hasMood: Boolean,
+    hasMucus: Boolean,
+    hasBbt: Boolean,
+    cyclesCount: Int,
+    symptomsCount: Int,
+    mucusCount: Int,
+    bbtCount: Int
+) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
@@ -246,7 +284,13 @@ private fun HomeScreen(onSectionChange: (AppSection) -> Unit) {
                 Text("Today's Logs", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = Color(0xFF16A34A))
                 Spacer(Modifier.height(10.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    listOf("Symptoms ✓", "Mood ✓", "Mucus ✓", "BBT ✓").forEach { label ->
+                    listOf(
+                        "Symptoms" to hasSymptoms,
+                        "Mood" to hasMood,
+                        "Mucus" to hasMucus,
+                        "BBT" to hasBbt
+                    ).forEach { (section, saved) ->
+                        val label = if (saved) "$section ✓" else "$section"
                         Box(
                             modifier = Modifier
                                 .background(Color(0xFFE9F9EF), RoundedCornerShape(999.dp))
@@ -315,15 +359,70 @@ private fun HomeScreen(onSectionChange: (AppSection) -> Unit) {
             }
         }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                StatCard("1", "Cycles Tracked", modifier = Modifier.weight(1f))
-                StatCard("7", "Symptom Logs", modifier = Modifier.weight(1f))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Brush.linearGradient(listOf(Color(0xFFD946EF), BrandPurple)), RoundedCornerShape(14.dp))
+                    .padding(18.dp)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Current Phase", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
+                        Text("Unknown", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("Cycle Day", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
+                        Text("31", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+        item {
+            CardContainer {
+                Text("Fertility Status", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(12.dp))
+                Text("Low", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                Text("Fertility Score", color = TextMuted)
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth()) {
+                    Text("Ovulation", color = TextMuted)
+                    Spacer(Modifier.weight(1f))
+                    Text("Feb 16", fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.height(6.dp))
+                Row(Modifier.fillMaxWidth()) {
+                    Text("Fertile Window", color = TextMuted)
+                    Spacer(Modifier.weight(1f))
+                    Text("Feb 12 - Feb 18", fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.height(12.dp))
+                Box(modifier = Modifier.fillMaxWidth().background(Color(0xFFE7F0FB), RoundedCornerShape(10.dp)).padding(12.dp)) {
+                    Text("These predictions are estimates based on your cycle history. Not a substitute for medical advice.", color = Color(0xFF1D4ED8), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+        item {
+            CardContainer {
+                Text("Today's Insight", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.background(Color(0xFFF2F3F7), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                        Text("unknown", color = TextMuted, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    }
+                    Text("  Log your cycle data to get personalized insights.", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+                }
             }
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                StatCard("10", "Mucus Logs", modifier = Modifier.weight(1f))
-                StatCard("24", "BBT Logs", modifier = Modifier.weight(1f))
+                StatCard(cyclesCount.toString(), "Cycles Tracked", modifier = Modifier.weight(1f))
+                StatCard(symptomsCount.toString(), "Symptom Logs", modifier = Modifier.weight(1f))
+            }
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                StatCard(mucusCount.toString(), "Mucus Logs", modifier = Modifier.weight(1f))
+                StatCard(bbtCount.toString(), "BBT Logs", modifier = Modifier.weight(1f))
             }
         }
         item { Spacer(Modifier.height(10.dp)) }
