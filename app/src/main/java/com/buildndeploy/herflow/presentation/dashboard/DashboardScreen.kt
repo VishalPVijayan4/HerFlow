@@ -26,6 +26,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,7 +42,9 @@ import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MonitorHeart
 import androidx.compose.material.icons.outlined.People
+import androidx.compose.material.icons.outlined.SentimentSatisfied
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -50,14 +54,18 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,7 +77,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private val AppBackground = Color(0xFFF2EEF8)
 private val CardBackground = Color(0xFFFCFCFD)
@@ -88,6 +98,13 @@ private enum class AppSection(val title: String, val icon: ImageVector) {
     Analytics("Analytics", Icons.Outlined.Analytics),
     PartnerMode("Partner Mode", Icons.Outlined.People),
     Settings("Settings", Icons.Outlined.Settings)
+}
+
+private enum class DailyLogTab(val label: String, val icon: ImageVector) {
+    Symptoms("Symptoms", Icons.Outlined.MonitorHeart),
+    Mood("Mood", Icons.Outlined.SentimentSatisfied),
+    Mucus("Mucus", Icons.Outlined.WaterDrop),
+    BBT("BBT", Icons.Outlined.Insights)
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -330,108 +347,328 @@ private fun HomeScreen() {
 
 @Composable
 private fun CycleTrackerScreen(onNewCycle: () -> Unit) {
+    var showCycleDialog by remember { mutableStateOf(false) }
+    val cycles = remember { mutableStateListOf<String>() }
+
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        HeaderWithAction("Cycle Tracker", "Log and manage your menstrual cycles", "New Cycle", onNewCycle)
+        HeaderWithAction(
+            "Cycle Tracker",
+            "Log and manage your menstrual cycles",
+            "New Cycle"
+        ) {
+            onNewCycle()
+            showCycleDialog = true
+        }
+        if (cycles.isEmpty()) {
+            CardContainer {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(Icons.Outlined.CalendarMonth, null, tint = Color(0xFFC9CDD6), modifier = Modifier.size(52.dp))
+                    Text("No cycles tracked yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Start by logging your first period to get personalized insights",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextMuted,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 10.dp)
+                    )
+                }
+            }
+        } else {
+            CardContainer {
+                Text("Tracked Cycles", style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(10.dp))
+                cycles.forEach {
+                    Text("• $it", style = MaterialTheme.typography.bodyLarge, color = TextMuted, modifier = Modifier.padding(vertical = 2.dp))
+                }
+            }
+        }
+    }
+    if (showCycleDialog) {
+        AddCycleDialog(
+            onDismiss = { showCycleDialog = false },
+            onAdd = { start, end ->
+                cycles.add("$start - ${end.ifBlank { "Ongoing" }}")
+                showCycleDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun DailyLogScreen(onSave: () -> Unit) {
+    val tabs = DailyLogTab.entries
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
+    val scope = rememberCoroutineScope()
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text("Daily Log", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text("Track your symptoms, mood, and fertility signs", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(14.dp))
+
         CardContainer {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(Icons.Outlined.CalendarMonth, null, tint = Color(0xFFC9CDD6), modifier = Modifier.size(52.dp))
-                Text("No cycles tracked yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                Text(
-                    "Start by logging your first period to get personalized insights",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = TextMuted,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 10.dp)
-                )
+            Text("Select Date", fontWeight = FontWeight.Medium)
+            FieldPill("27/03/2026", Icons.Outlined.CalendarMonth)
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFE8E8EC), RoundedCornerShape(18.dp))
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            tabs.forEachIndexed { index, tab ->
+                val selected = pagerState.currentPage == index
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(if (selected) Color.White else Color.Transparent, RoundedCornerShape(14.dp))
+                        .clickable {
+                            scope.launch { pagerState.animateScrollToPage(index) }
+                        }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(tab.icon, contentDescription = tab.label, modifier = Modifier.size(14.dp))
+                    Text(tab.label, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 6.dp))
+                }
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            when (tabs[page]) {
+                DailyLogTab.Symptoms -> SymptomsPage(onSave)
+                DailyLogTab.Mood -> MoodPage(onSave)
+                DailyLogTab.Mucus -> MucusPage(onSave)
+                DailyLogTab.BBT -> BbtPage(onSave)
             }
         }
     }
 }
 
 @Composable
-private fun DailyLogScreen(onSave: () -> Unit) {
+private fun SymptomsPage(onSave: () -> Unit) {
+    val selectedItems = remember { mutableStateListOf<String>() }
+    var notes by remember { mutableStateOf("") }
     val sections = listOf(
         "Physical Symptoms" to listOf("Cramps", "Headache", "Bloating", "Breast Tenderness", "Backache", "Nausea", "Fatigue"),
         "Skin" to listOf("Acne", "Oily Skin", "Dry Skin"),
         "Digestion" to listOf("Constipation", "Diarrhea", "Appetite Changes")
     )
-
-    Column {
-        Text("Daily Log", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
-        Text("Track your symptoms, mood, and fertility signs", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
-        Spacer(Modifier.height(14.dp))
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            CardContainer {
-                Text("Select Date", fontWeight = FontWeight.Medium)
-                FieldPill("27/03/2026", Icons.Outlined.CalendarMonth)
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFE8E8EC), RoundedCornerShape(16.dp))
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                listOf("Symptoms", "Mood", "Mucus", "BBT").forEachIndexed { idx, label ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .background(if (idx == 0) Color.White else Color.Transparent, RoundedCornerShape(14.dp))
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(label, fontWeight = FontWeight.SemiBold)
-                    }
-                }
-            }
-
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        item {
             sections.forEach { (title, items) ->
                 CardContainer {
                     Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.height(10.dp))
                     items.forEach { label ->
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 2.dp)) {
+                        val selected = selectedItems.contains(label)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clickable {
+                                    if (selected) selectedItems.remove(label) else selectedItems.add(label)
+                                }
+                                .padding(vertical = 4.dp)
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .size(18.dp)
-                                    .border(1.dp, Color(0xFFD1D5DC), RoundedCornerShape(4.dp))
+                                    .background(if (selected) BrandPink.copy(alpha = 0.2f) else Color.Transparent, RoundedCornerShape(4.dp))
+                                    .border(1.dp, if (selected) BrandPink else Color(0xFFD1D5DC), RoundedCornerShape(4.dp))
                             )
                             Text(label, modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 }
             }
-
+        }
+        item {
             CardContainer {
-                Text("Energy & Sleep", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(10.dp))
-                Text("Energy Level", style = MaterialTheme.typography.bodyLarge)
-                FieldPill("Normal", Icons.Outlined.Insights)
-                Spacer(Modifier.height(8.dp))
-                Text("Sleep Quality", style = MaterialTheme.typography.bodyLarge)
-                FieldPill("Okay", Icons.Outlined.Insights)
+                Text("Notes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                OutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    placeholder = { Text("Any additional thoughts or observations") },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                )
             }
-
+        }
+        item {
             Button(
                 onClick = onSave,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkAction),
                 shape = RoundedCornerShape(10.dp)
-            ) {
-                Text("Save Symptoms", color = Color.White, modifier = Modifier.padding(vertical = 4.dp))
-            }
-            Spacer(Modifier.height(8.dp))
+            ) { Text("Save Symptoms", color = Color.White) }
         }
+        item { Spacer(Modifier.height(12.dp)) }
+    }
+}
+
+@Composable
+private fun MoodPage(onSave: () -> Unit) {
+    val moods = listOf("Happy" to "😊", "Calm" to "😌", "Anxious" to "😰", "Irritable" to "😤", "Sad" to "😢", "Sensitive" to "🥺", "Confident" to "😎")
+    val selectedMoods = remember { mutableStateListOf<String>() }
+    var notes by remember { mutableStateOf("") }
+
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        item {
+            CardContainer {
+                Text("How are you feeling?", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                Text("Select all that apply", style = MaterialTheme.typography.bodyLarge, color = TextMuted)
+                Spacer(Modifier.height(12.dp))
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    userScrollEnabled = false,
+                    modifier = Modifier.height(430.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(moods) { (label, emoji) ->
+                        val selected = selectedMoods.contains(label)
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .clickable {
+                                    if (selected) selectedMoods.remove(label) else selectedMoods.add(label)
+                                },
+                            colors = CardDefaults.cardColors(containerColor = if (selected) BrandPink.copy(alpha = 0.12f) else Color.White),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(emoji, style = MaterialTheme.typography.headlineSmall)
+                                Text(label, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeScreen() {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        item { Spacer(Modifier.height(4.dp)) }
+        item {
+            CardContainer {
+                Text("Notes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                OutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    placeholder = { Text("Any additional thoughts or observations") },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                )
+            }
+        }
+        item {
+            Button(
+                onClick = onSave,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
+            ) { Text("Save Mood", color = Color.White) }
+        }
+    }
+}
+
+@Composable
+private fun MucusPage(onSave: () -> Unit) {
+    var selectedType by remember { mutableStateOf("Select mucus type") }
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf("Dry", "Sticky", "Creamy", "Egg-white (stretchy)", "Watery")
+
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        CardContainer {
+            Text("Cervical Mucus Type", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+            Text("Egg-white (stretchy) mucus indicates peak fertility", style = MaterialTheme.typography.bodyLarge, color = TextMuted)
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF2F2F5), RoundedCornerShape(10.dp))
+                    .clickable { expanded = !expanded }
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(selectedType, style = MaterialTheme.typography.bodyLarge, color = TextMuted)
+                Spacer(Modifier.weight(1f))
+                Text("⌄", color = TextMuted)
+            }
+            if (expanded) {
+                Spacer(Modifier.height(6.dp))
+                options.forEach { option ->
+                    Text(
+                        option,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                selectedType = option
+                                expanded = false
+                            }
+                            .padding(vertical = 6.dp),
+                        color = TextPrimary
+                    )
+                }
+            }
+        }
+        Button(
+            onClick = onSave,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = DarkAction.copy(alpha = 0.55f)),
+            enabled = selectedType != "Select mucus type"
+        ) { Text("Save Cervical Mucus", color = Color.White) }
+    }
+}
+
+@Composable
+private fun BbtPage(onSave: () -> Unit) {
+    var temperature by remember { mutableStateOf("36.5") }
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        CardContainer {
+            Text("Basal Body Temperature", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+            Text("Take your temperature first thing in the morning before getting up", style = MaterialTheme.typography.bodyLarge, color = TextMuted)
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = temperature,
+                onValueChange = { temperature = it },
+                label = { Text("Temperature (°C)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(12.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F1FF)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFB7D0FF))
+            ) {
+                Text(
+                    "Tip: A dip followed by a rise confirms ovulation. Normal BBT ranges from 36.1-36.4°C before ovulation and 36.4-37.0°C after.",
+                    color = Color(0xFF0E44CC),
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.height(14.dp))
+                OutlinedAction("View Partner Guide", Icons.Outlined.FavoriteBorder)
+            }
+        }
+        Button(
+            onClick = onSave,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = DarkAction.copy(alpha = 0.60f))
+        ) { Text("Save BBT", color = Color.White) }
     }
 }
 
@@ -839,6 +1076,69 @@ private fun ToggleToast(modifier: Modifier = Modifier, message: String) {
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 10.dp)
             )
+        }
+    }
+}
+
+@Composable
+private fun AddCycleDialog(
+    onDismiss: () -> Unit,
+    onAdd: (String, String) -> Unit
+) {
+    var startDate by remember { mutableStateOf("") }
+    var endDate by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(12.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
+        ) {
+            Column(modifier = Modifier.padding(18.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Log New Cycle", style = MaterialTheme.typography.headlineSmall, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                    Spacer(Modifier.weight(1f))
+                    TextButton(onClick = onDismiss) { Text("✕") }
+                }
+                Text("Enter the start and end dates of your period", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+                Spacer(Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = startDate,
+                    onValueChange = { startDate = it },
+                    label = { Text("Start Date") },
+                    placeholder = { Text("dd/mm/yyyy") },
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = { Icon(Icons.Outlined.CalendarMonth, null) }
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = endDate,
+                    onValueChange = { endDate = it },
+                    label = { Text("End Date (optional)") },
+                    placeholder = { Text("dd/mm/yyyy") },
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = { Icon(Icons.Outlined.CalendarMonth, null) }
+                )
+                Text("Leave empty if your period is ongoing", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.padding(top = 6.dp))
+                Spacer(Modifier.height(14.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = { onAdd(startDate, endDate) },
+                        modifier = Modifier.weight(1f),
+                        enabled = startDate.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
+                    ) {
+                        Text("Add Cycle")
+                    }
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF3F4F6), contentColor = TextPrimary)
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            }
         }
     }
 }
