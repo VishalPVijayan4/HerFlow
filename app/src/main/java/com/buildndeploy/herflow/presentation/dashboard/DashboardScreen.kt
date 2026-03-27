@@ -286,8 +286,6 @@ private fun ScreenContent(
                 AppSection.PartnerMode -> PartnerModeScreen()
                 AppSection.Settings -> SettingsScreen()
             }
-            Spacer(Modifier.height(12.dp))
-            SectionNavigation(selectedSection = selectedSection, onSectionChange = onSectionChange)
         }
     }
 }
@@ -493,7 +491,7 @@ private fun SymptomsPage(onSave: () -> Unit) {
         item {
             sections.forEach { (title, items) ->
                 CardContainer {
-                    Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                    Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
                     Spacer(Modifier.height(10.dp))
                     items.forEach { label ->
                         val selected = selectedItems.contains(label)
@@ -511,7 +509,13 @@ private fun SymptomsPage(onSave: () -> Unit) {
                                     .background(if (selected) BrandPink.copy(alpha = 0.2f) else Color.Transparent, RoundedCornerShape(4.dp))
                                     .border(1.dp, if (selected) BrandPink else Color(0xFFD1D5DC), RoundedCornerShape(4.dp))
                             )
-                            Text(label, modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                label,
+                                modifier = Modifier.padding(start = 8.dp),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextPrimary,
+                                fontWeight = FontWeight.Normal
+                            )
                         }
                     }
                 }
@@ -721,10 +725,7 @@ private fun CalendarScreen() {
         CardContainer {
             Text("Selected: ${selectedDate.format(DisplayDateFormatter)}", color = TextPrimary, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(10.dp))
-            Button(
-                onClick = { showCalendar = true },
-                colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
-            ) { Text("Open Calendar", color = Color.White) }
+            FieldPill(selectedDate.format(DisplayDateFormatter), Icons.Outlined.CalendarMonth) { showCalendar = true }
         }
     }
 
@@ -874,18 +875,19 @@ private fun SettingsScreen() {
 
 @Composable
 private fun HeaderWithAction(title: String, subtitle: String, action: String, onClick: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.weight(1f)) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Column {
             Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
             Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
         }
+        Spacer(Modifier.height(10.dp))
         Button(
             onClick = onClick,
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = BrandPink)
         ) {
-            Icon(Icons.Rounded.Add, null)
-            Text(action, modifier = Modifier.padding(start = 8.dp))
+            Icon(Icons.Rounded.Add, null, tint = Color.White)
+            Text(action, modifier = Modifier.padding(start = 8.dp), color = Color.White)
         }
     }
 }
@@ -935,36 +937,9 @@ private fun FieldPill(text: String, icon: ImageVector, onClick: () -> Unit = {})
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text, style = MaterialTheme.typography.bodyLarge)
+        Text(text, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
         Spacer(Modifier.weight(1f))
         Icon(icon, null, tint = Color(0xFF6D7482), modifier = Modifier.size(18.dp))
-    }
-}
-
-@Composable
-private fun SectionNavigation(selectedSection: AppSection, onSectionChange: (AppSection) -> Unit) {
-    val sections = AppSection.entries
-    val selectedIndex = sections.indexOf(selectedSection)
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Button(
-            onClick = { if (selectedIndex > 0) onSectionChange(sections[selectedIndex - 1]) },
-            modifier = Modifier.weight(1f),
-            enabled = selectedIndex > 0,
-            colors = ButtonDefaults.buttonColors(containerColor = DarkAction.copy(alpha = 0.8f))
-        ) {
-            Text("Previous", color = Color.White, fontSize = 12.sp)
-        }
-        Button(
-            onClick = { if (selectedIndex < sections.lastIndex) onSectionChange(sections[selectedIndex + 1]) },
-            modifier = Modifier.weight(1f),
-            enabled = selectedIndex < sections.lastIndex,
-            colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
-        ) {
-            Text("Next", color = Color.White, fontSize = 12.sp)
-        }
     }
 }
 
@@ -996,7 +971,7 @@ private fun SettingsBlock(
         Spacer(Modifier.height(18.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(switchLabel, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium, color = TextPrimary)
+                Text(switchLabel, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Text(
                     switchSubtitle,
                     color = TextMuted,
@@ -1030,7 +1005,7 @@ private fun PillReminderBlock(enabled: Boolean, onToggle: (Boolean) -> Unit) {
         Spacer(Modifier.height(18.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Enable Daily Reminder", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium, color = TextPrimary)
+                Text("Enable Daily Reminder", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Text("Get notified at the same time every day", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
             }
             ToggleSwitch(enabled = enabled, onToggle = onToggle)
@@ -1267,28 +1242,14 @@ private fun AppCalendarDialog(
                     item(span = { GridItemSpan(7) }) {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Button(
-                                onClick = { currentMonth = currentMonth.minusMonths(1) },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F2F5), contentColor = TextPrimary)
-                            ) {
-                                Text("Previous", fontSize = 11.sp)
-                            }
-                            Button(
                                 onClick = { currentMonth = YearMonth.from(today); selectedDate = today; onDateSelected(today) },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(0.5f),
                                 colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
                             ) {
                                 Text("Today", color = Color.White, fontSize = 11.sp)
-                            }
-                            Button(
-                                onClick = { currentMonth = currentMonth.plusMonths(1) },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F2F5), contentColor = TextPrimary)
-                            ) {
-                                Text("Next", fontSize = 11.sp)
                             }
                         }
                     }
