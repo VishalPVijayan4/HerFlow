@@ -3,15 +3,19 @@ package com.buildndeploy.herflow.data.repository
 import com.buildndeploy.herflow.data.local.CycleDao
 import com.buildndeploy.herflow.data.local.CycleEntryEntity
 import com.buildndeploy.herflow.data.preferences.UserPreferencesDataSource
+import com.buildndeploy.herflow.domain.model.CervicalMucusType
 import com.buildndeploy.herflow.domain.model.CycleEntry
 import com.buildndeploy.herflow.domain.model.DashboardData
 import com.buildndeploy.herflow.domain.model.FeatureCard
+import com.buildndeploy.herflow.domain.model.FlowLevel
+import com.buildndeploy.herflow.domain.model.MoodType
+import com.buildndeploy.herflow.domain.model.SymptomType
 import com.buildndeploy.herflow.domain.repository.CycleRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 
 @Singleton
 class CycleRepositoryImpl @Inject constructor(
@@ -45,17 +49,21 @@ class CycleRepositoryImpl @Inject constructor(
                 CycleEntryEntity(
                     startDate = LocalDate.now().minusDays(56),
                     endDate = LocalDate.now().minusDays(51),
-                    flowLevel = 3,
+                    flowLevel = FlowLevel.MEDIUM,
                     painLevel = 2,
-                    mood = "Balanced",
+                    mood = MoodType.CALM,
+                    symptoms = listOf(SymptomType.CRAMPS, SymptomType.FATIGUE),
+                    cervicalMucus = CervicalMucusType.CREAMY,
                     notes = "Hydration and yoga helped with cramps"
                 ),
                 CycleEntryEntity(
                     startDate = LocalDate.now().minusDays(28),
                     endDate = LocalDate.now().minusDays(23),
-                    flowLevel = 4,
+                    flowLevel = FlowLevel.HEAVY,
                     painLevel = 3,
-                    mood = "Low energy",
+                    mood = MoodType.LOW,
+                    symptoms = listOf(SymptomType.BLOATING, SymptomType.BACK_PAIN),
+                    cervicalMucus = CervicalMucusType.STICKY,
                     notes = "Prioritized sleep and iron-rich meals"
                 )
             )
@@ -67,7 +75,7 @@ class CycleRepositoryImpl @Inject constructor(
         latestEntries: List<CycleEntry>,
         onboardingComplete: Boolean
     ): List<FeatureCard> {
-        val latestMood = latestEntries.firstOrNull()?.mood ?: "No data yet"
+        val latestMood = latestEntries.firstOrNull()?.mood?.name?.replace('_', ' ') ?: "No data yet"
         return listOf(
             FeatureCard(
                 title = "Smart Predictions",
@@ -98,6 +106,8 @@ class CycleRepositoryImpl @Inject constructor(
         flowLevel = flowLevel,
         painLevel = painLevel,
         mood = mood,
+        symptoms = symptoms,
+        cervicalMucus = cervicalMucus,
         notes = notes
     )
 }
