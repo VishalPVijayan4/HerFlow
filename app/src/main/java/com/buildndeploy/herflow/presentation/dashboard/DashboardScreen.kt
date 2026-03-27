@@ -8,11 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -75,7 +73,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
@@ -259,29 +256,25 @@ private fun ScreenContent(
     onNewCycle: () -> Unit,
     onSave: () -> Unit
 ) {
-    BoxWithConstraints(
-        modifier = Modifier.fillMaxSize()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 12.dp, vertical = 14.dp),
+        contentAlignment = Alignment.TopCenter
     ) {
-        val horizontalPadding = if (maxWidth > 700.dp) 36.dp else 12.dp
-        val contentWidth = if (maxWidth > 900.dp) 860.dp else Dp.Unspecified
-
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = horizontalPadding, vertical = 14.dp),
-            contentAlignment = Alignment.TopCenter
+                .fillMaxWidth()
+                .widthIn(max = 860.dp)
         ) {
-            val childModifier = if (contentWidth == Dp.Unspecified) Modifier.fillMaxWidth() else Modifier.width(contentWidth)
-            Column(modifier = childModifier) {
-                when (selectedSection) {
-                    AppSection.Home -> HomeScreen()
-                    AppSection.CycleTracker -> CycleTrackerScreen(onNewCycle)
-                    AppSection.DailyLog -> DailyLogScreen(onSave)
-                    AppSection.Calendar -> CalendarScreen()
-                    AppSection.Analytics -> AnalyticsScreen()
-                    AppSection.PartnerMode -> PartnerModeScreen()
-                    AppSection.Settings -> SettingsScreen()
-                }
+            when (selectedSection) {
+                AppSection.Home -> HomeScreen()
+                AppSection.CycleTracker -> CycleTrackerScreen(onNewCycle)
+                AppSection.DailyLog -> DailyLogScreen(onSave)
+                AppSection.Calendar -> CalendarScreen()
+                AppSection.Analytics -> AnalyticsScreen()
+                AppSection.PartnerMode -> PartnerModeScreen()
+                AppSection.Settings -> SettingsScreen()
             }
         }
     }
@@ -558,13 +551,6 @@ private fun MoodPage(onSave: () -> Unit) {
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun HomeScreen() {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        item { Spacer(Modifier.height(4.dp)) }
         item {
             CardContainer {
                 Text("Notes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
