@@ -23,6 +23,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.TrendingUp
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.WaterDrop
+import androidx.compose.material.icons.outlined.ShowChart
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Menu
@@ -46,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -285,14 +291,14 @@ private fun HomeScreen(
     LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                QuickActionTile("Log Today", BrandPink, onClick = { onSectionChange(AppSection.DailyLog) }, modifier = Modifier.weight(1f))
-                QuickActionTile("Track Cycle", BrandPurple, onClick = { onSectionChange(AppSection.CycleTracker) }, modifier = Modifier.weight(1f))
+                QuickActionTile("Log Today", BrandPink, Icons.Outlined.Edit, onClick = { onSectionChange(AppSection.DailyLog) }, modifier = Modifier.weight(1f))
+                QuickActionTile("Track Cycle", BrandPurple, Icons.Outlined.FavoriteBorder, onClick = { onSectionChange(AppSection.CycleTracker) }, modifier = Modifier.weight(1f))
             }
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                QuickActionTile("View Stats", Color(0xFF2563EB), onClick = { onSectionChange(AppSection.Analytics) }, modifier = Modifier.weight(1f))
-                QuickActionTile("Calendar", Color(0xFF4F46E5), onClick = { onSectionChange(AppSection.Calendar) }, modifier = Modifier.weight(1f))
+                QuickActionTile("View Stats", Color(0xFF2563EB), Icons.Outlined.ShowChart, onClick = { onSectionChange(AppSection.Analytics) }, modifier = Modifier.weight(1f))
+                QuickActionTile("Calendar", Color(0xFF4F46E5), Icons.Outlined.CalendarMonth, onClick = { onSectionChange(AppSection.Calendar) }, modifier = Modifier.weight(1f))
             }
         }
         item {
@@ -315,6 +321,28 @@ private fun HomeScreen(
                             Text(label, color = Color(0xFF15803D), style = MaterialTheme.typography.bodySmall)
                         }
                     }
+                }
+            }
+        }
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Brush.linearGradient(listOf(Color(0xFFD946EF), BrandPurple)), RoundedCornerShape(14.dp))
+                    .padding(18.dp)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.AutoAwesome, null, tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(16.dp))
+                            Text("Current Phase", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 6.dp))
+                        }
+                        Text("Unknown", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("Cycle Day", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
+                        Text("31", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                    }
                     Text("  Log your cycle data to get personalized insights.", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                 }
             }
@@ -363,27 +391,11 @@ private fun HomeScreen(
             }
         }
         item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Brush.linearGradient(listOf(Color(0xFFD946EF), BrandPurple)), RoundedCornerShape(14.dp))
-                    .padding(18.dp)
-            ) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Current Phase", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
-                        Text("Unknown", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("Cycle Day", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
-                        Text("31", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        }
-        item {
             CardContainer {
-                Text("Fertility Status", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.WaterDrop, null, tint = TextPrimary, modifier = Modifier.size(18.dp))
+                    Text("Fertility Status", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 6.dp))
+                }
                 Spacer(Modifier.height(12.dp))
                 Text("Low", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                 Text("Fertility Score", color = TextMuted)
@@ -407,7 +419,10 @@ private fun HomeScreen(
         }
         item {
             CardContainer {
-                Text("Today's Insight", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.TrendingUp, null, tint = TextPrimary, modifier = Modifier.size(18.dp))
+                    Text("Today's Insight", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 6.dp))
+                }
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.background(Color(0xFFF2F3F7), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
@@ -419,14 +434,14 @@ private fun HomeScreen(
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                StatCard(cyclesCount.toString(), "Cycles Tracked", modifier = Modifier.weight(1f))
-                StatCard(symptomsCount.toString(), "Symptom Logs", modifier = Modifier.weight(1f))
+                StatCard(cyclesCount.toString(), "Cycles Tracked", Icons.Outlined.CalendarMonth, BrandPink, modifier = Modifier.weight(1f))
+                StatCard(symptomsCount.toString(), "Symptom Logs", Icons.Outlined.FavoriteBorder, BrandPurple, modifier = Modifier.weight(1f))
             }
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                StatCard(mucusCount.toString(), "Mucus Logs", modifier = Modifier.weight(1f))
-                StatCard(bbtCount.toString(), "BBT Logs", modifier = Modifier.weight(1f))
+                StatCard(mucusCount.toString(), "Mucus Logs", Icons.Outlined.WaterDrop, Color(0xFF3B82F6), modifier = Modifier.weight(1f))
+                StatCard(bbtCount.toString(), "BBT Logs", Icons.Outlined.TrendingUp, Color(0xFF10B981), modifier = Modifier.weight(1f))
             }
         }
         item { Spacer(Modifier.height(10.dp)) }
@@ -434,21 +449,29 @@ private fun HomeScreen(
 }
 
 @Composable
-private fun QuickActionTile(title: String, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun QuickActionTile(title: String, color: Color, icon: ImageVector, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.75f))), RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(16.dp)
     ) {
-        Text(title, color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Icon(icon, null, tint = Color.White, modifier = Modifier.size(20.dp))
+            Text(title, color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        }
     }
 }
 
 @Composable
-private fun StatCard(value: String, label: String, modifier: Modifier = Modifier) {
+private fun StatCard(value: String, label: String, icon: ImageVector, iconTint: Color, modifier: Modifier = Modifier) {
     CardContainer {
-        Column(modifier = modifier) {
+        Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.weight(1f))
+                Icon(Icons.Outlined.TrendingUp, null, tint = Color(0xFF22C55E), modifier = Modifier.size(16.dp))
+            }
             Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Text(label, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
         }
