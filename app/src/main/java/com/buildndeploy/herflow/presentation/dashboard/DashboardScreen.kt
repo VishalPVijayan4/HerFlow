@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -73,9 +74,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -85,8 +91,9 @@ private val BorderColor = Color(0xFFE4DCEB)
 private val BrandPink = Color(0xFFF6249B)
 private val BrandPurple = Color(0xFF9D3DF2)
 private val TextPrimary = Color(0xFF0E1525)
-private val TextMuted = Color(0xFF4D5A72)
+private val TextMuted = Color(0xFF334155)
 private val DarkAction = Color(0xFF05072D)
+private val DisplayDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
 private enum class AppSection(val title: String, val icon: ImageVector) {
     Home("Home", Icons.Outlined.Home),
@@ -137,7 +144,8 @@ fun DashboardRoute(
             ScreenContent(
                 selectedSection = selectedSection,
                 onNewCycle = onRefresh,
-                onSave = { onIntent(DashboardIntent.Refresh) }
+                onSave = { onIntent(DashboardIntent.Refresh) },
+                onSectionChange = { selectedSection = it }
             )
 
             if (showDrawer) {
@@ -255,7 +263,8 @@ private fun DrawerPanel(
 private fun ScreenContent(
     selectedSection: AppSection,
     onNewCycle: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    onSectionChange: (AppSection) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -269,7 +278,7 @@ private fun ScreenContent(
                 .widthIn(max = 860.dp)
         ) {
             when (selectedSection) {
-                AppSection.Home -> HomeScreen()
+                AppSection.Home -> HomeScreen(onSectionChange)
                 AppSection.CycleTracker -> CycleTrackerScreen(onNewCycle)
                 AppSection.DailyLog -> DailyLogScreen(onSave)
                 AppSection.Calendar -> CalendarScreen()
@@ -277,12 +286,14 @@ private fun ScreenContent(
                 AppSection.PartnerMode -> PartnerModeScreen()
                 AppSection.Settings -> SettingsScreen()
             }
+            Spacer(Modifier.height(12.dp))
+            SectionNavigation(selectedSection = selectedSection, onSectionChange = onSectionChange)
         }
     }
 }
 
 @Composable
-private fun HomeScreen() {
+private fun HomeScreen(onSectionChange: (AppSection) -> Unit) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(18.dp)) {
         item { Spacer(Modifier.height(4.dp)) }
         item {
@@ -306,7 +317,7 @@ private fun HomeScreen() {
                         modifier = Modifier.padding(top = 8.dp)
                     )
                     Button(
-                        onClick = {},
+                        onClick = { onSectionChange(AppSection.CycleTracker) },
                         shape = RoundedCornerShape(999.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                         contentPadding = PaddingValues(0.dp),
@@ -333,8 +344,8 @@ private fun HomeScreen() {
                 }
             }
         }
-        item { FeatureTile(Icons.Outlined.MonitorHeart, "Track Daily", "Log symptoms, moods, and fertility signs", "Click to start", BrandPink) }
-        item { FeatureTile(Icons.Outlined.CalendarMonth, "View Calendar", "Visualize your cycle and patterns", "Coming soon", BrandPurple) }
+        item { FeatureTile(Icons.Outlined.MonitorHeart, "Track Daily", "Log symptoms, moods, and fertility signs", "Open Daily Log", BrandPink) { onSectionChange(AppSection.DailyLog) } }
+        item { FeatureTile(Icons.Outlined.CalendarMonth, "View Calendar", "Visualize your cycle and patterns", "Open Calendar", BrandPurple) { onSectionChange(AppSection.Calendar) } }
         item { Spacer(Modifier.height(12.dp)) }
     }
 }
@@ -396,6 +407,8 @@ private fun DailyLogScreen(onSave: () -> Unit) {
     val tabs = DailyLogTab.entries
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text("Daily Log", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -403,8 +416,10 @@ private fun DailyLogScreen(onSave: () -> Unit) {
         Spacer(Modifier.height(14.dp))
 
         CardContainer {
-            Text("Select Date", fontWeight = FontWeight.Medium)
-            FieldPill("27/03/2026", Icons.Outlined.CalendarMonth)
+            Text("Select Date", fontWeight = FontWeight.Bold, color = TextPrimary)
+            FieldPill(selectedDate.format(DisplayDateFormatter), Icons.Outlined.CalendarMonth) {
+                showDatePicker = true
+            }
         }
         Spacer(Modifier.height(12.dp))
         Row(
@@ -427,8 +442,14 @@ private fun DailyLogScreen(onSave: () -> Unit) {
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(tab.icon, contentDescription = tab.label, modifier = Modifier.size(14.dp))
-                    Text(tab.label, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 6.dp))
+                    Text(
+                        tab.label,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = if (selected) TextPrimary else TextMuted
+                    )
                 }
             }
         }
@@ -445,6 +466,17 @@ private fun DailyLogScreen(onSave: () -> Unit) {
                 DailyLogTab.BBT -> BbtPage(onSave)
             }
         }
+    }
+
+    if (showDatePicker) {
+        AppCalendarDialog(
+            initialDate = selectedDate,
+            onDismiss = { showDatePicker = false },
+            onDateSelected = {
+                selectedDate = it
+                showDatePicker = false
+            }
+        )
     }
 }
 
@@ -518,7 +550,7 @@ private fun MoodPage(onSave: () -> Unit) {
         item {
             CardContainer {
                 Text("How are you feeling?", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                Text("Select all that apply", style = MaterialTheme.typography.bodyLarge, color = TextMuted)
+                Text("Select all that apply", style = MaterialTheme.typography.bodyLarge, color = TextMuted, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(12.dp))
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -661,6 +693,9 @@ private fun BbtPage(onSave: () -> Unit) {
 
 @Composable
 private fun CalendarScreen() {
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var showCalendar by remember { mutableStateOf(false) }
+
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Calendar", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
         Text("Visual overview of your cycle", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
@@ -684,45 +719,24 @@ private fun CalendarScreen() {
             }
         }
         CardContainer {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("March 2026", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                Spacer(Modifier.weight(1f))
-                SmallChip("‹")
-                SmallChip("Today")
-                SmallChip("›")
-            }
-            Spacer(Modifier.height(12.dp))
-            val headers = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                headers.forEach { Text(it, color = TextMuted, fontWeight = FontWeight.Medium) }
-            }
-            Spacer(Modifier.height(12.dp))
-            val days = (1..31).map { it.toString() } + listOf("1", "2", "3", "4")
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
-                modifier = Modifier.height(300.dp),
-                userScrollEnabled = false,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(days) { day ->
-                    val muted = day.toIntOrNull()?.let { it < 5 && days.indexOf(day) > 30 } == true
-                    Box(
-                        modifier = Modifier
-                            .size(52.dp)
-                            .border(
-                                1.dp,
-                                if (day == "27") BrandPink else BorderColor,
-                                RoundedCornerShape(12.dp)
-                            )
-                            .alpha(if (muted) 0.4f else 1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(day, color = if (muted) Color(0xFFB7BCC6) else Color(0xFF2D3B55))
-                    }
-                }
-            }
+            Text("Selected: ${selectedDate.format(DisplayDateFormatter)}", color = TextPrimary, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(10.dp))
+            Button(
+                onClick = { showCalendar = true },
+                colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
+            ) { Text("Open Calendar", color = Color.White) }
         }
+    }
+
+    if (showCalendar) {
+        AppCalendarDialog(
+            initialDate = selectedDate,
+            onDismiss = { showCalendar = false },
+            onDateSelected = {
+                selectedDate = it
+                showCalendar = false
+            }
+        )
     }
 }
 
@@ -863,7 +877,7 @@ private fun HeaderWithAction(title: String, subtitle: String, action: String, on
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
-            Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+            Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
         }
         Button(
             onClick = onClick,
@@ -891,12 +905,19 @@ private fun CardContainer(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun FeatureTile(icon: ImageVector, title: String, description: String, badge: String, badgeColor: Color) {
+private fun FeatureTile(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    badge: String,
+    badgeColor: Color,
+    onClick: () -> Unit = {}
+) {
     CardContainer {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onClick() }) {
             Icon(icon, null, tint = BrandPink)
             Spacer(Modifier.weight(1f))
-            Text(badge, color = badgeColor)
+            Text(badge, color = badgeColor, fontWeight = FontWeight.Bold)
         }
         Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp), color = TextPrimary)
         Text(description, style = MaterialTheme.typography.bodyLarge, color = TextMuted)
@@ -904,18 +925,46 @@ private fun FeatureTile(icon: ImageVector, title: String, description: String, b
 }
 
 @Composable
-private fun FieldPill(text: String, icon: ImageVector) {
+private fun FieldPill(text: String, icon: ImageVector, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 4.dp)
             .background(Color(0xFFF2F2F5), RoundedCornerShape(10.dp))
+            .clickable { onClick() }
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text, style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.weight(1f))
         Icon(icon, null, tint = Color(0xFF6D7482), modifier = Modifier.size(18.dp))
+    }
+}
+
+@Composable
+private fun SectionNavigation(selectedSection: AppSection, onSectionChange: (AppSection) -> Unit) {
+    val sections = AppSection.entries
+    val selectedIndex = sections.indexOf(selectedSection)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Button(
+            onClick = { if (selectedIndex > 0) onSectionChange(sections[selectedIndex - 1]) },
+            modifier = Modifier.weight(1f),
+            enabled = selectedIndex > 0,
+            colors = ButtonDefaults.buttonColors(containerColor = DarkAction.copy(alpha = 0.8f))
+        ) {
+            Text("Previous", color = Color.White, fontSize = 12.sp)
+        }
+        Button(
+            onClick = { if (selectedIndex < sections.lastIndex) onSectionChange(sections[selectedIndex + 1]) },
+            modifier = Modifier.weight(1f),
+            enabled = selectedIndex < sections.lastIndex,
+            colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
+        ) {
+            Text("Next", color = Color.White, fontSize = 12.sp)
+        }
     }
 }
 
@@ -1072,8 +1121,10 @@ private fun AddCycleDialog(
     onDismiss: () -> Unit,
     onAdd: (String, String) -> Unit
 ) {
-    var startDate by remember { mutableStateOf("") }
-    var endDate by remember { mutableStateOf("") }
+    var startDate by remember { mutableStateOf<LocalDate?>(null) }
+    var endDate by remember { mutableStateOf<LocalDate?>(null) }
+    var showStartPicker by remember { mutableStateOf(false) }
+    var showEndPicker by remember { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -1090,30 +1141,27 @@ private fun AddCycleDialog(
                 }
                 Text("Enter the start and end dates of your period", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.height(10.dp))
-                OutlinedTextField(
-                    value = startDate,
-                    onValueChange = { startDate = it },
-                    label = { Text("Start Date") },
-                    placeholder = { Text("dd/mm/yyyy") },
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = { Icon(Icons.Outlined.CalendarMonth, null) }
-                )
+                Text("Start Date", fontWeight = FontWeight.Bold, color = TextPrimary)
+                FieldPill(startDate?.format(DisplayDateFormatter) ?: "dd/mm/yyyy", Icons.Outlined.CalendarMonth) {
+                    showStartPicker = true
+                }
                 Spacer(Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = endDate,
-                    onValueChange = { endDate = it },
-                    label = { Text("End Date (optional)") },
-                    placeholder = { Text("dd/mm/yyyy") },
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = { Icon(Icons.Outlined.CalendarMonth, null) }
-                )
+                Text("End Date (optional)", fontWeight = FontWeight.Bold, color = TextPrimary)
+                FieldPill(endDate?.format(DisplayDateFormatter) ?: "dd/mm/yyyy", Icons.Outlined.CalendarMonth) {
+                    showEndPicker = true
+                }
                 Text("Leave empty if your period is ongoing", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.padding(top = 6.dp))
                 Spacer(Modifier.height(14.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
-                        onClick = { onAdd(startDate, endDate) },
+                        onClick = {
+                            onAdd(
+                                startDate?.format(DisplayDateFormatter).orEmpty(),
+                                endDate?.format(DisplayDateFormatter).orEmpty()
+                            )
+                        },
                         modifier = Modifier.weight(1f),
-                        enabled = startDate.isNotBlank(),
+                        enabled = startDate != null,
                         colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
                     ) {
                         Text("Add Cycle")
@@ -1123,6 +1171,126 @@ private fun AddCycleDialog(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF3F4F6), contentColor = TextPrimary)
                     ) {
                         Text("Cancel")
+                    }
+                }
+            }
+        }
+    }
+
+    if (showStartPicker) {
+        AppCalendarDialog(
+            initialDate = startDate ?: LocalDate.now(),
+            onDismiss = { showStartPicker = false },
+            onDateSelected = {
+                startDate = it
+                showStartPicker = false
+            }
+        )
+    }
+    if (showEndPicker) {
+        AppCalendarDialog(
+            initialDate = endDate ?: (startDate ?: LocalDate.now()),
+            onDismiss = { showEndPicker = false },
+            onDateSelected = {
+                endDate = it
+                showEndPicker = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun AppCalendarDialog(
+    initialDate: LocalDate,
+    onDismiss: () -> Unit,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    var selectedDate by remember { mutableStateOf(initialDate) }
+    var currentMonth by remember { mutableStateOf(YearMonth.from(initialDate)) }
+    val today = LocalDate.now()
+    val daysInMonth = currentMonth.lengthOfMonth()
+    val firstDayOffset = currentMonth.atDay(1).dayOfWeek.value % 7
+    val monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(currentMonth.format(monthFormatter), fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Spacer(Modifier.weight(1f))
+                    SmallChip("‹")
+                    SmallChip("›")
+                }
+                Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    listOf("S", "M", "T", "W", "T", "F", "S").forEach {
+                        Text(it, color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(7),
+                    modifier = Modifier.height(240.dp),
+                    userScrollEnabled = false,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    items(firstDayOffset) { Box(modifier = Modifier.size(32.dp)) }
+                    items((1..daysInMonth).toList()) { day ->
+                        val date = currentMonth.atDay(day)
+                        val isSelected = date == selectedDate
+                        val isToday = date == today
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    color = if (isSelected) BrandPink.copy(alpha = 0.2f) else Color.Transparent,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .border(
+                                    1.dp,
+                                    if (isSelected || isToday) BrandPink else BorderColor,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .clickable {
+                                    selectedDate = date
+                                    onDateSelected(date)
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(day.toString(), color = TextPrimary, fontSize = 11.sp)
+                        }
+                    }
+                    item(span = { GridItemSpan(7) }) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { currentMonth = currentMonth.minusMonths(1) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F2F5), contentColor = TextPrimary)
+                            ) {
+                                Text("Previous", fontSize = 11.sp)
+                            }
+                            Button(
+                                onClick = { currentMonth = YearMonth.from(today); selectedDate = today; onDateSelected(today) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
+                            ) {
+                                Text("Today", color = Color.White, fontSize = 11.sp)
+                            }
+                            Button(
+                                onClick = { currentMonth = currentMonth.plusMonths(1) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F2F5), contentColor = TextPrimary)
+                            ) {
+                                Text("Next", fontSize = 11.sp)
+                            }
+                        }
                     }
                 }
             }
