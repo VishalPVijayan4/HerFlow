@@ -21,8 +21,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -48,7 +46,13 @@ import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-internal fun CalendarScreen() {
+internal fun CalendarScreen(
+    hasSymptoms: (LocalDate) -> Boolean = { false },
+    hasMood: (LocalDate) -> Boolean = { false },
+    hasMucus: (LocalDate) -> Boolean = { false },
+    hasBbt: (LocalDate) -> Boolean = { false },
+    onAddEntry: (LocalDate) -> Unit = {}
+) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
     val today = LocalDate.now()
@@ -58,12 +62,10 @@ internal fun CalendarScreen() {
     val totalCells = ((firstDayOffset + daysInMonth + 6) / 7) * 7
     val firstVisibleDate = currentMonth.atDay(1).minusDays(firstDayOffset.toLong())
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Calendar", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
         Text("Visual overview of your cycle", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+
         CardContainer {
             val labels = listOf(
                 "Period" to Color(0xFFFF3B45),
@@ -83,6 +85,7 @@ internal fun CalendarScreen() {
                 }
             }
         }
+
         CardContainer {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(currentMonth.format(monthFormatter), fontWeight = FontWeight.Bold, color = TextPrimary, style = MaterialTheme.typography.titleLarge)
@@ -136,14 +139,7 @@ internal fun CalendarScreen() {
                         modifier = Modifier
                             .size(44.dp)
                             .background(Color.White, RoundedCornerShape(10.dp))
-                            .border(
-                                1.4.dp,
-                                when {
-                                    isSelected -> BrandPink
-                                    else -> BorderColor
-                                },
-                                RoundedCornerShape(10.dp)
-                            )
+                            .border(1.4.dp, if (isSelected) BrandPink else BorderColor, RoundedCornerShape(10.dp))
                             .clickable {
                                 selectedDate = date
                                 currentMonth = YearMonth.from(date)
@@ -159,6 +155,7 @@ internal fun CalendarScreen() {
                 }
             }
         }
+
         CardContainer {
             Text("Predictions for ${currentMonth.month.name.lowercase().replaceFirstChar { it.uppercase() }}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(10.dp))
@@ -175,6 +172,36 @@ internal fun CalendarScreen() {
             }
         }
 
+        CardContainer {
+            Text(selectedDate.format(DateTimeFormatter.ofPattern("EEEE, MMM d")), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(8.dp))
+            Text("Logs for this day", style = MaterialTheme.typography.bodyLarge, color = TextMuted)
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                listOf(
+                    "Symptoms" to hasSymptoms(selectedDate),
+                    "Mood" to hasMood(selectedDate),
+                    "Mucus" to hasMucus(selectedDate),
+                    "BBT" to hasBbt(selectedDate)
+                ).forEach { (label, done) ->
+                    Box(
+                        modifier = Modifier
+                            .background(if (done) Color(0xFFE8F9ED) else Color(0xFFF2F3F7), RoundedCornerShape(999.dp))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(if (done) "$label ✓" else label, color = if (done) Color(0xFF15803D) else TextMuted, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = { onAddEntry(selectedDate) },
+                colors = ButtonDefaults.buttonColors(containerColor = DarkAction),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Add entry", color = Color.White)
+            }
+        }
     }
 }
 

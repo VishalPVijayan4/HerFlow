@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun DailyLogScreen(
     onSave: () -> Unit,
+    initialDate: LocalDate = LocalDate.now(),
     symptomsByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, SymptomsLogState>,
     moodsByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, MoodLogState>,
     mucusByDate: androidx.compose.runtime.snapshots.SnapshotStateMap<LocalDate, MucusLogState>,
@@ -62,7 +63,11 @@ internal fun DailyLogScreen(
     val tabs = DailyLogTab.entries
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedDate by remember { mutableStateOf(initialDate) }
+
+    LaunchedEffect(initialDate) {
+        selectedDate = initialDate
+    }
     var showDatePicker by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
 
