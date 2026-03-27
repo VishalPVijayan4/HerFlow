@@ -7,9 +7,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -28,15 +29,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import java.time.LocalDate
 
+private data class TrackedCycle(
+    val startDate: LocalDate,
+    val endDate: LocalDate?
+)
+
 @Composable
 internal fun CycleTrackerScreen(onNewCycle: () -> Unit) {
     var showCycleDialog by remember { mutableStateOf(false) }
-    val cycles = remember { mutableStateListOf<String>() }
+    val cycles = remember {
+        mutableStateListOf(
+            TrackedCycle(LocalDate.of(2026, 2, 25), LocalDate.of(2026, 3, 1))
+        )
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         HeaderWithAction(
@@ -47,38 +56,37 @@ internal fun CycleTrackerScreen(onNewCycle: () -> Unit) {
             onNewCycle()
             showCycleDialog = true
         }
-        if (cycles.isEmpty()) {
+
+        cycles.forEachIndexed { index, cycle ->
             CardContainer {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(Icons.Outlined.CalendarMonth, null, tint = Color(0xFFC9CDD6), modifier = Modifier.size(52.dp))
-                    Text("No cycles tracked yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                    Text(
-                        "Start by logging your first period to get personalized insights",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = TextMuted,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 10.dp)
+                Row(verticalAlignment = Alignment.Top) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(cycle.startDate.format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy")), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                        Text("Ended: ${cycle.endDate?.format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy")) ?: "Ongoing"}", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+                        val days = ((cycle.endDate ?: LocalDate.now()).toEpochDay() - cycle.startDate.toEpochDay() + 1).toInt().coerceAtLeast(1)
+                        Text("Duration: $days days", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+                        Text("Flow entries: $days days logged", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+                    }
+                    Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = TextPrimary)
+                    Spacer(Modifier.padding(horizontal = 6.dp))
+                    Icon(
+                        Icons.Outlined.DeleteOutline,
+                        contentDescription = "Delete",
+                        tint = Color(0xFFEF4444),
+                        modifier = Modifier.padding(start = 8.dp)
                     )
-                }
-            }
-        } else {
-            CardContainer {
-                Text("Tracked Cycles", style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(10.dp))
-                cycles.forEach {
-                    Text("• $it", style = MaterialTheme.typography.bodyLarge, color = TextMuted, modifier = Modifier.padding(vertical = 2.dp))
                 }
             }
         }
     }
+
     if (showCycleDialog) {
         AddCycleDialog(
             onDismiss = { showCycleDialog = false },
             onAdd = { start, end ->
-                cycles.add("$start - ${end.ifBlank { "Ongoing" }}")
+                val parsedStart = LocalDate.parse(start, DisplayDateFormatter)
+                val parsedEnd = end.takeIf { it.isNotBlank() }?.let { LocalDate.parse(it, DisplayDateFormatter) }
+                cycles.add(0, TrackedCycle(parsedStart, parsedEnd))
                 showCycleDialog = false
             }
         )
