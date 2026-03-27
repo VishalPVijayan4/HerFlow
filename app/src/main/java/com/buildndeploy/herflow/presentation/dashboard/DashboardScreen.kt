@@ -119,6 +119,7 @@ fun DashboardRoute(
     var showDrawer by remember { mutableStateOf(false) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             AppTopBar(
                 showClose = showDrawer,
@@ -645,6 +646,8 @@ private fun BbtPage(onSave: () -> Unit) {
                     modifier = Modifier.padding(12.dp),
                     style = MaterialTheme.typography.bodyMedium
                 )
+                Spacer(Modifier.height(14.dp))
+                OutlinedAction("View Partner Guide", Icons.Outlined.FavoriteBorder)
             }
         }
         Button(
