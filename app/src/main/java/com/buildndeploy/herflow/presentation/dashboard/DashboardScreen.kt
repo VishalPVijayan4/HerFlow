@@ -322,6 +322,7 @@ private fun HomeScreen(
                             Text(label, color = Color(0xFF15803D), style = MaterialTheme.typography.bodySmall)
                         }
                     }
+                    Text("  Log your cycle data to get personalized insights.", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }
@@ -482,3 +483,51 @@ private fun HomeStatCard(value: String, label: String, icon: ImageVector, iconTi
     }
     }
 }
+
+@Composable
+private fun StatCard(value: String, label: String, icon: ImageVector, iconTint: Color, modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
+        CardContainer {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.weight(1f))
+                Icon(Icons.Outlined.TrendingUp, null, tint = Color(0xFF22C55E), modifier = Modifier.size(16.dp))
+            }
+            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(label, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+    }
+}
+
+@Composable
+private fun QuickActionTile(title: String, color: Color, icon: ImageVector, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier = modifier
+            .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.75f))), RoundedCornerShape(14.dp))
+            .clickable { onClick() }
+            .padding(16.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Icon(icon, null, tint = Color.White, modifier = Modifier.size(20.dp))
+            Text(title, color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun StatCard(value: String, label: String, icon: ImageVector, iconTint: Color, modifier: Modifier = Modifier) {
+    CardContainer {
+        Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.weight(1f))
+                Icon(Icons.Outlined.TrendingUp, null, tint = Color(0xFF22C55E), modifier = Modifier.size(16.dp))
+            }
+            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(label, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+}
+
