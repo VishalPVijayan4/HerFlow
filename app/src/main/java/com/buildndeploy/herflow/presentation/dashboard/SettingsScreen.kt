@@ -264,6 +264,113 @@ private fun MultiBars(items: List<Pair<String, Float>>) {
                 Text(label, color = TextMuted, style = MaterialTheme.typography.bodySmall)
             }
         }
+
+        CardContainer {
+            OutlinedAction("Download Summary", Icons.Outlined.Insights)
+            Spacer(Modifier.height(10.dp))
+            OutlinedAction("Understanding the Menstrual Cycle", Icons.Outlined.Insights)
+        }
+
+        Text(
+            "This guide is for educational purposes to help partners be more supportive.\nAlways respect privacy and communicate openly.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = TextMuted,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun ChartCard(title: String, subtitle: String, content: @Composable ColumnScope.() -> Unit) {
+    CardContainer {
+        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(12.dp))
+        Column { content() }
+    }
+}
+
+@Composable
+private fun SingleBar(value: Float, label: String, color: Color) {
+    val normalized = (value / 8f).coerceIn(0f, 1f)
+    Column(modifier = Modifier.fillMaxWidth().height(220.dp), verticalArrangement = Arrangement.Bottom) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height((160f * normalized).dp.coerceAtLeast(8.dp))
+                .background(color, RoundedCornerShape(8.dp))
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(label, modifier = Modifier.align(Alignment.CenterHorizontally), color = TextMuted)
+    }
+}
+
+@Composable
+private fun HorizontalBars(items: List<Pair<String, Float>>) {
+    val max = items.maxOfOrNull { it.second } ?: 1f
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        items.forEach { (label, value) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(label, modifier = Modifier.width(112.dp), color = TextMuted)
+                Box(modifier = Modifier.weight(1f).height(30.dp).background(Color(0xFFE8EEF8), RoundedCornerShape(8.dp))) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth((value / max).coerceIn(0f, 1f))
+                            .height(30.dp)
+                            .background(Color(0xFF3D7BE0), RoundedCornerShape(8.dp))
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MultiBars(items: List<Pair<String, Float>>) {
+    val max = items.maxOfOrNull { it.second } ?: 1f
+    val colors = listOf(BrandPink, BrandPurple, Color(0xFF3B82F6), Color(0xFF10B981), Color(0xFFF59E0B), Color(0xFFEF4444), Color(0xFF8B5CF6))
+    Row(modifier = Modifier.fillMaxWidth().height(220.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
+        items.forEachIndexed { index, (label, value) ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height((140f * (value / max)).dp.coerceAtLeast(12.dp))
+                        .background(colors[index % colors.size], RoundedCornerShape(8.dp))
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(label, color = TextMuted, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SimpleLineChart(values: List<Float>, minY: Float, maxY: Float, lineColor: Color) {
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(220.dp)
+            .background(Color(0xFFF8FAFC), RoundedCornerShape(10.dp))
+            .padding(12.dp)
+    ) {
+        if (values.size < 2) return@Canvas
+        val stepX = size.width / (values.size - 1)
+        fun mapY(v: Float): Float = size.height - (((v - minY) / (maxY - minY)).coerceIn(0f, 1f) * size.height)
+
+        val path = Path().apply {
+            moveTo(0f, mapY(values.first()))
+            values.drop(1).forEachIndexed { index, v ->
+                lineTo((index + 1) * stepX, mapY(v))
+            }
+        }
+        drawPath(path = path, color = lineColor, style = Stroke(width = 4f))
+        values.forEachIndexed { index, v ->
+            drawCircle(lineColor, radius = 5f, center = Offset(index * stepX, mapY(v)))
+        }
     }
 }
 
