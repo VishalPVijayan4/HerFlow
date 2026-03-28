@@ -1,6 +1,7 @@
 package com.buildndeploy.herflow.presentation.dashboard
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -392,6 +393,7 @@ private fun SettingsBlock(
 
 @Composable
 private fun PillReminderBlock(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    var reminderTime by remember { mutableStateOf("09:00") }
     CardContainer {
         Text("Pill Reminder", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
         Text("Daily contraceptive reminder", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
@@ -417,10 +419,13 @@ private fun PillReminderBlock(enabled: Boolean, onToggle: (Boolean) -> Unit) {
                     modifier = Modifier
                         .weight(1f)
                         .background(Color(0xFFF2F2F5), RoundedCornerShape(10.dp))
+                        .clickable {
+                            reminderTime = if (reminderTime == "09:00") "08:00" else "09:00"
+                        }
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("09:00", style = MaterialTheme.typography.titleMedium)
+                    Text(reminderTime, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
                     Icon(Icons.Outlined.Insights, contentDescription = null, tint = Color(0xFF6D7482), modifier = Modifier.padding(start = 10.dp).size(14.dp))
                 }
                 Button(
@@ -428,7 +433,7 @@ private fun PillReminderBlock(enabled: Boolean, onToggle: (Boolean) -> Unit) {
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
                 ) {
-                    Text("Save")
+                    Text("Save", color = Color.White)
                 }
             }
         }

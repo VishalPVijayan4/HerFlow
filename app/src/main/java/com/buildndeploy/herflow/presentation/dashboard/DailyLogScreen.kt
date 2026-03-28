@@ -29,6 +29,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -340,7 +341,19 @@ private fun BbtPage(currentLog: BbtLogState?, onSaveLog: (BbtLogState) -> Unit) 
             Text("Basal Body Temperature", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
             Text("Take your temperature first thing in the morning before getting up", style = MaterialTheme.typography.bodyLarge, color = TextMuted)
             Spacer(Modifier.height(12.dp))
-            OutlinedTextField(value = temperature, onValueChange = { temperature = it }, label = { Text("Temperature (°C)") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(
+                value = temperature,
+                onValueChange = { temperature = it },
+                label = { Text("Temperature (°C)", color = TextMuted) },
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextPrimary),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary,
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                )
+            )
             Spacer(Modifier.height(12.dp))
             Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F1FF)), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFB7D0FF))) {
                 Text(

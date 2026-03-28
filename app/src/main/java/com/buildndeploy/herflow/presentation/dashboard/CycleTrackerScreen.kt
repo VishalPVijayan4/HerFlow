@@ -157,7 +157,7 @@ private fun AddCycleDialog(
                         enabled = startDate != null,
                         colors = ButtonDefaults.buttonColors(containerColor = DarkAction)
                     ) {
-                        Text("Add Cycle")
+                        Text("Add Cycle", color = Color.White)
                     }
                     Button(
                         onClick = onDismiss,
