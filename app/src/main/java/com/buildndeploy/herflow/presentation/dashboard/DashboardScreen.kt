@@ -348,49 +348,6 @@ private fun HomeScreen(
             }
         }
         item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Brush.linearGradient(listOf(Color(0xFFD946EF), BrandPurple)), RoundedCornerShape(14.dp))
-                    .padding(18.dp)
-            ) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Current Phase", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
-                        Text("Unknown", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("Cycle Day", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
-                        Text("31", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        }
-        item {
-            CardContainer {
-                Text("Fertility Status", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(12.dp))
-                Text("Low", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                Text("Fertility Score", color = TextMuted)
-                Spacer(Modifier.height(12.dp))
-                Row(Modifier.fillMaxWidth()) {
-                    Text("Ovulation", color = TextMuted)
-                    Spacer(Modifier.weight(1f))
-                    Text("Feb 16", fontWeight = FontWeight.SemiBold)
-                }
-                Spacer(Modifier.height(6.dp))
-                Row(Modifier.fillMaxWidth()) {
-                    Text("Fertile Window", color = TextMuted)
-                    Spacer(Modifier.weight(1f))
-                    Text("Feb 12 - Feb 18", fontWeight = FontWeight.SemiBold)
-                }
-                Spacer(Modifier.height(12.dp))
-                Box(modifier = Modifier.fillMaxWidth().background(Color(0xFFE7F0FB), RoundedCornerShape(10.dp)).padding(12.dp)) {
-                    Text("These predictions are estimates based on your cycle history. Not a substitute for medical advice.", color = Color(0xFF1D4ED8), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-        }
-        item {
             CardContainer {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.WaterDrop, null, tint = TextPrimary, modifier = Modifier.size(18.dp))
