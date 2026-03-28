@@ -484,22 +484,22 @@ private fun HomeStatCard(value: String, label: String, icon: ImageVector, iconTi
     }
 }
 
-@Composable
-private fun StatCard(value: String, label: String, icon: ImageVector, iconTint: Color, modifier: Modifier = Modifier) {
-    Box(modifier = modifier) {
-        CardContainer {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
-                Spacer(Modifier.weight(1f))
-                Icon(Icons.Outlined.TrendingUp, null, tint = Color(0xFF22C55E), modifier = Modifier.size(16.dp))
-            }
-            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Text(label, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
-        }
-    }
-    }
-}
+//@Composable
+//private fun StatCard(value: String, label: String, icon: ImageVector, iconTint: Color, modifier: Modifier = Modifier) {
+//    Box(modifier = modifier) {
+//        CardContainer {
+//            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+//            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+//                Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
+//                Spacer(Modifier.weight(1f))
+//                Icon(Icons.Outlined.TrendingUp, null, tint = Color(0xFF22C55E), modifier = Modifier.size(16.dp))
+//            }
+//            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+//            Text(label, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+//        }
+//    }
+//    }
+//}
 
 @Composable
 private fun QuickActionTile(title: String, color: Color, icon: ImageVector, modifier: Modifier = Modifier, onClick: () -> Unit) {
