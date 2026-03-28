@@ -41,3 +41,14 @@ internal enum class DailyLogTab(val label: String, val icon: ImageVector) {
     Mucus("Mucus", Icons.Outlined.WaterDrop),
     BBT("BBT", Icons.Outlined.Insights)
 }
+
+
+internal data class CycleRecord(
+    val startDate: java.time.LocalDate,
+    val endDate: java.time.LocalDate?
+)
+
+internal data class SymptomsLogState(val items: Set<String>, val notes: String)
+internal data class MoodLogState(val moods: Set<String>, val notes: String)
+internal data class MucusLogState(val type: String)
+internal data class BbtLogState(val temperature: String)

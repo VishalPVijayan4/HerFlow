@@ -22,7 +22,9 @@ object DatabaseModule {
             context,
             HerFlowDatabase::class.java,
             "herflow.db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
 
     @Provides
     fun provideCycleDao(database: HerFlowDatabase): CycleDao = database.cycleDao()
