@@ -20,12 +20,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -178,6 +176,117 @@ internal fun PartnerModeScreen() {
 private fun ChartCard(title: String, subtitle: String, content: @Composable ColumnScope.() -> Unit) {
     CardContainer {
         Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.height(14.dp))
+        Column { content() }
+    }
+}
+
+@Composable
+private fun SingleBar(value: Float, label: String, color: Color) {
+    val normalized = (value / 8f).coerceIn(0f, 1f)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(172.dp),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(132.dp)
+                .background(Color(0xFFF3F4F6), RoundedCornerShape(10.dp))
+                .padding(horizontal = 28.dp, vertical = 10.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.30f)
+                    .height((108f * normalized).dp.coerceAtLeast(16.dp))
+                    .background(color, RoundedCornerShape(8.dp))
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(label, modifier = Modifier.align(Alignment.CenterHorizontally), color = TextMuted)
+    }
+}
+
+@Composable
+private fun HorizontalBars(items: List<Pair<String, Float>>) {
+    val max = items.maxOfOrNull { it.second } ?: 1f
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items.forEach { (label, value) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(label, modifier = Modifier.width(112.dp), color = TextMuted)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(24.dp)
+                        .background(Color(0xFFEFF3FA), RoundedCornerShape(8.dp))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth((value / max).coerceIn(0f, 1f))
+                            .height(24.dp)
+                            .background(Color(0xFF3D7BE0), RoundedCornerShape(8.dp))
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MultiBars(items: List<Pair<String, Float>>) {
+    val max = items.maxOfOrNull { it.second } ?: 1f
+    val colors = listOf(BrandPink, BrandPurple, Color(0xFF3B82F6), Color(0xFF10B981), Color(0xFFF59E0B), Color(0xFFEF4444), Color(0xFF8B5CF6))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(170.dp)
+            .background(Color(0xFFF3F4F6), RoundedCornerShape(10.dp))
+            .padding(horizontal = 8.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        items.forEachIndexed { index, (label, value) ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height((104f * (value / max)).dp.coerceAtLeast(10.dp))
+                        .background(colors[index % colors.size], RoundedCornerShape(8.dp))
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(label, color = TextMuted, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        CardContainer {
+            OutlinedAction("Download Summary", Icons.Outlined.Insights)
+            Spacer(Modifier.height(10.dp))
+            OutlinedAction("Understanding the Menstrual Cycle", Icons.Outlined.Insights)
+        }
+
+        Text(
+            "This guide is for educational purposes to help partners be more supportive.\nAlways respect privacy and communicate openly.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = TextMuted,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun ChartCard(title: String, subtitle: String, content: @Composable ColumnScope.() -> Unit) {
+    CardContainer {
+        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
         Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(12.dp))
         Column { content() }
@@ -261,6 +370,53 @@ private fun SimpleLineChart(values: List<Float>, minY: Float, maxY: Float, lineC
         drawPath(path = path, color = lineColor, style = Stroke(width = 4f))
         values.forEachIndexed { index, v ->
             drawCircle(lineColor, radius = 5f, center = Offset(index * stepX, mapY(v)))
+        }
+    }
+}
+
+@Composable
+private fun SimpleLineChart(values: List<Float>, minY: Float, maxY: Float, lineColor: Color) {
+    Column {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(188.dp)
+                .background(Color(0xFFF8FAFC), RoundedCornerShape(10.dp))
+                .padding(horizontal = 10.dp, vertical = 8.dp)
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                if (values.size < 2) return@Canvas
+                val stepX = size.width / (values.size - 1)
+                fun mapY(v: Float): Float = size.height - (((v - minY) / (maxY - minY)).coerceIn(0f, 1f) * size.height)
+
+                val horizontalLines = 4
+                repeat(horizontalLines + 1) { index ->
+                    val y = (size.height / horizontalLines) * index
+                    drawLine(
+                        color = Color(0xFFD9E1F1),
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = 1.2f
+                    )
+                }
+
+                val path = Path().apply {
+                    moveTo(0f, mapY(values.first()))
+                    values.drop(1).forEachIndexed { index, v ->
+                        lineTo((index + 1) * stepX, mapY(v))
+                    }
+                }
+                drawPath(path = path, color = lineColor, style = Stroke(width = 3.4f))
+                values.forEachIndexed { index, v ->
+                    drawCircle(color = lineColor, radius = 4.6f, center = Offset(index * stepX, mapY(v)))
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(String.format("%.1f", minY), color = TextMuted, style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.weight(1f))
+            Text(String.format("%.1f", maxY), color = TextMuted, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

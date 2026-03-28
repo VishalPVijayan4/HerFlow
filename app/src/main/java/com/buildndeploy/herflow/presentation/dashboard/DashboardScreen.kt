@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
 
@@ -320,23 +321,6 @@ private fun HomeScreen(
                         ) {
                             Text(label, color = Color(0xFF15803D), style = MaterialTheme.typography.bodySmall)
                         }
-                    }
-                }
-            }
-        }
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Brush.linearGradient(listOf(Color(0xFFD946EF), BrandPurple)), RoundedCornerShape(14.dp))
-                    .padding(18.dp)
-            ) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.AutoAwesome, null, tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(16.dp))
-                            Text("Current Phase", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 6.dp))
-                        }
                         Text("Unknown", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                     }
                     Column(horizontalAlignment = Alignment.End) {
@@ -346,6 +330,9 @@ private fun HomeScreen(
                     Text("  Log your cycle data to get personalized insights.", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                 }
             }
+        }
+        item {
+            HomePhaseCard(phaseLabel = "Unknown", cycleDay = 31)
         }
         item {
             CardContainer {
@@ -402,6 +389,103 @@ private fun HomeScreen(
             }
         }
         item { Spacer(Modifier.height(10.dp)) }
+    }
+}
+
+@Composable
+private fun HomePhaseCard(phaseLabel: String, cycleDay: Int) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                Brush.linearGradient(listOf(Color(0xFFD946EF), BrandPurple)),
+                RoundedCornerShape(14.dp)
+            )
+            .padding(horizontal = 18.dp, vertical = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Outlined.AutoAwesome,
+                        null,
+                        tint = Color.White.copy(alpha = 0.92f),
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Text(
+                        "Current Phase",
+                        color = Color.White.copy(alpha = 0.90f),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                }
+                Text(
+                    text = phaseLabel,
+                    color = Color.White,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    "Cycle Day",
+                    color = Color.White.copy(alpha = 0.9f),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    cycleDay.toString(),
+                    color = Color.White,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickActionTile(title: String, color: Color, icon: ImageVector, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier = modifier
+            .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.75f))), RoundedCornerShape(14.dp))
+            .clickable { onClick() }
+            .padding(16.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Icon(icon, null, tint = Color.White, modifier = Modifier.size(20.dp))
+            Text(title, color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun StatCard(value: String, label: String, icon: ImageVector, iconTint: Color, modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
+        CardContainer {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.weight(1f))
+                Icon(Icons.Outlined.TrendingUp, null, tint = Color(0xFF22C55E), modifier = Modifier.size(16.dp))
+            }
+            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(label, color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+        }
+    }
     }
 }
 
