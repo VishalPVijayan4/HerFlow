@@ -21,8 +21,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.Mood
+import androidx.compose.material.icons.outlined.MonitorHeart
+import androidx.compose.material.icons.outlined.ShowChart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -56,27 +60,27 @@ internal fun AnalyticsScreen() {
         "headache" to 2f,
         "breast tenderness" to 2f
     )
-    val moodDistribution = listOf("Happy" to 5f, "Calm" to 4f, "Sad" to 2f, "Anxious" to 2f)
+    val moodDistribution = listOf("Irritable" to 5f, "Sensitive" to 3f, "Sad" to 2f, "Anxious" to 2f)
     val bbtValues = listOf(36.2f, 36.3f, 36.1f, 36.2f, 36.3f, 36.2f, 36.3f, 36.4f, 36.5f, 36.7f, 36.8f, 36.7f, 36.8f, 36.9f, 36.7f, 36.8f, 36.7f, 36.8f, 36.7f, 36.8f, 36.7f, 36.6f, 36.7f, 36.6f)
     val energyValues = listOf(1f, 1f, 2f, 3f, 3f, 1f, 1f)
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Analytics", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text("Analytics", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = BrandPurple)
         Text("Track your patterns and trends", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
 
-        AnalyticsChartCard("Cycle Length Trend", "Last 1 cycles") {
+        AnalyticsChartCard("Cycle Length Trend", "Last 1 cycles", icon = Icons.Outlined.DateRange) {
             AnalyticsSingleBar(value = 5f, label = "Cycle 1", color = BrandPink)
         }
-        AnalyticsChartCard("Period Duration", "How many days each period lasted") {
+        AnalyticsChartCard("Period Duration", "How many days each period lasted", icon = Icons.Outlined.DateRange) {
             AnalyticsSingleBar(value = 5f, label = "Period 1", color = BrandPurple)
         }
-        AnalyticsChartCard("Most Common Symptoms", "Tracked across all logged days") {
+        AnalyticsChartCard("Most Common Symptoms", "Tracked across all logged days", icon = Icons.Outlined.MonitorHeart) {
             AnalyticsHorizontalBars(symptoms)
         }
-        AnalyticsChartCard("Mood Distribution", "Your emotional patterns") {
+        AnalyticsChartCard("Mood Distribution", "Your emotional patterns", icon = Icons.Outlined.Mood) {
             AnalyticsMultiBars(moodDistribution)
         }
-        AnalyticsChartCard("Basal Body Temperature Curve", "Temperature pattern over time") {
+        AnalyticsChartCard("Basal Body Temperature Curve", "Temperature pattern over time", icon = Icons.Outlined.ShowChart) {
             AnalyticsSimpleLineChart(values = bbtValues, minY = 35.5f, maxY = 37.5f, lineColor = Color(0xFFEF4444))
             Spacer(Modifier.height(10.dp))
             Box(
@@ -92,7 +96,7 @@ internal fun AnalyticsScreen() {
                 )
             }
         }
-        AnalyticsChartCard("Energy Levels (Last 2 Weeks)", "Track your energy patterns") {
+        AnalyticsChartCard("Energy Levels (Last 2 Weeks)", "Track your energy patterns", icon = Icons.Outlined.ShowChart) {
             AnalyticsSimpleLineChart(values = energyValues, minY = 0f, maxY = 4f, lineColor = Color(0xFF10B981))
         }
     }
@@ -174,10 +178,18 @@ internal fun PartnerModeScreen() {
 }
 
 @Composable
-private fun AnalyticsChartCard(title: String, subtitle: String, content: @Composable ColumnScope.() -> Unit) {
+private fun AnalyticsChartCard(
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    content: @Composable ColumnScope.() -> Unit
+) {
     CardContainer {
-        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-        Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyMedium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = Color(0xFF5D6470), modifier = Modifier.size(14.dp))
+            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 6.dp))
+        }
+        Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(14.dp))
         Column { content() }
     }
@@ -186,28 +198,39 @@ private fun AnalyticsChartCard(title: String, subtitle: String, content: @Compos
 @Composable
 private fun AnalyticsSingleBar(value: Float, label: String, color: Color) {
     val normalized = (value / 8f).coerceIn(0f, 1f)
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(172.dp),
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        Box(
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(132.dp)
-                .background(Color(0xFFF3F4F6), RoundedCornerShape(10.dp))
-                .padding(horizontal = 28.dp, vertical = 10.dp),
-            contentAlignment = Alignment.BottomCenter
+                .height(140.dp)
         ) {
+            Column(
+                modifier = Modifier
+                    .width(24.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                listOf("8", "6", "4", "2", "0").forEach {
+                    Text(it, color = TextMuted, style = MaterialTheme.typography.bodySmall)
+                }
+            }
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.30f)
-                    .height((108f * normalized).dp.coerceAtLeast(16.dp))
-                    .background(color, RoundedCornerShape(8.dp))
-            )
+                    .weight(1f)
+                    .fillMaxSize()
+                    .background(Color(0xFFF8F9FB), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 22.dp, vertical = 10.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.45f)
+                        .height((108f * normalized).dp.coerceAtLeast(16.dp))
+                        .background(color, RoundedCornerShape(8.dp))
+                )
+            }
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
         Text(label, modifier = Modifier.align(Alignment.CenterHorizontally), color = TextMuted)
     }
 }
@@ -221,7 +244,7 @@ private fun AnalyticsHorizontalBars(items: List<Pair<String, Float>>) {
     ) {
         items.forEach { (label, value) ->
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(label, modifier = Modifier.width(112.dp), color = TextMuted)
+                Text(label, modifier = Modifier.width(112.dp), color = TextMuted, style = MaterialTheme.typography.bodySmall)
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -262,8 +285,61 @@ private fun AnalyticsMultiBars(items: List<Pair<String, Float>>) {
                         .background(colors[index % colors.size], RoundedCornerShape(8.dp))
                 )
                 Spacer(Modifier.height(6.dp))
-                Text(label, color = TextMuted, style = MaterialTheme.typography.bodySmall)
+                Text(label, color = TextMuted, style = MaterialTheme.typography.labelSmall)
             }
+        }
+    }
+}
+
+@Composable
+private fun AnalyticsSimpleLineChart(values: List<Float>, minY: Float, maxY: Float, lineColor: Color) {
+    Column {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(188.dp)
+                .background(Color(0xFFF8FAFC), RoundedCornerShape(10.dp))
+                .padding(horizontal = 10.dp, vertical = 8.dp)
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                if (values.size < 2) return@Canvas
+                val stepX = size.width / (values.size - 1)
+                fun mapY(v: Float): Float = size.height - (((v - minY) / (maxY - minY)).coerceIn(0f, 1f) * size.height)
+
+                val horizontalLines = 4
+                repeat(horizontalLines + 1) { index ->
+                    val y = (size.height / horizontalLines) * index
+                    drawLine(
+                        color = Color(0xFFD9E1F1),
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = 1.2f
+                    )
+                }
+
+                val path = Path().apply {
+                    moveTo(0f, mapY(values.first()))
+                    values.drop(1).forEachIndexed { index, v ->
+                        lineTo((index + 1) * stepX, mapY(v))
+                    }
+                }
+                drawPath(path = path, color = lineColor, style = Stroke(width = 3.4f))
+                values.forEachIndexed { index, v ->
+                    drawCircle(color = lineColor, radius = 4.6f, center = Offset(index * stepX, mapY(v)))
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(String.format("%.1f", minY), color = TextMuted, style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.weight(1f))
+            Text(String.format("%.1f", maxY), color = TextMuted, style = MaterialTheme.typography.bodySmall)
+        }
+        Spacer(Modifier.height(2.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text("Mar 5", color = TextMuted, style = MaterialTheme.typography.labelSmall)
+            Spacer(Modifier.weight(1f))
+            Text("Mar 28", color = TextMuted, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
