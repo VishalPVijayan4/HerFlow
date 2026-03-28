@@ -63,20 +63,20 @@ internal fun AnalyticsScreen() {
         Text("Analytics", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
         Text("Track your patterns and trends", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
 
-        ChartCard("Cycle Length Trend", "Last 1 cycles") {
-            SingleBar(value = 5f, label = "Cycle 1", color = BrandPink)
+        AnalyticsChartCard("Cycle Length Trend", "Last 1 cycles") {
+            AnalyticsSingleBar(value = 5f, label = "Cycle 1", color = BrandPink)
         }
-        ChartCard("Period Duration", "How many days each period lasted") {
-            SingleBar(value = 5f, label = "Period 1", color = BrandPurple)
+        AnalyticsChartCard("Period Duration", "How many days each period lasted") {
+            AnalyticsSingleBar(value = 5f, label = "Period 1", color = BrandPurple)
         }
-        ChartCard("Most Common Symptoms", "Tracked across all logged days") {
-            HorizontalBars(symptoms)
+        AnalyticsChartCard("Most Common Symptoms", "Tracked across all logged days") {
+            AnalyticsHorizontalBars(symptoms)
         }
-        ChartCard("Mood Distribution", "Your emotional patterns") {
-            MultiBars(moodDistribution)
+        AnalyticsChartCard("Mood Distribution", "Your emotional patterns") {
+            AnalyticsMultiBars(moodDistribution)
         }
-        ChartCard("Basal Body Temperature Curve", "Temperature pattern over time") {
-            SimpleLineChart(values = bbtValues, minY = 35.5f, maxY = 37.5f, lineColor = Color(0xFFEF4444))
+        AnalyticsChartCard("Basal Body Temperature Curve", "Temperature pattern over time") {
+            AnalyticsSimpleLineChart(values = bbtValues, minY = 35.5f, maxY = 37.5f, lineColor = Color(0xFFEF4444))
             Spacer(Modifier.height(10.dp))
             Box(
                 modifier = Modifier
@@ -91,8 +91,8 @@ internal fun AnalyticsScreen() {
                 )
             }
         }
-        ChartCard("Energy Levels (Last 2 Weeks)", "Track your energy patterns") {
-            SimpleLineChart(values = energyValues, minY = 0f, maxY = 4f, lineColor = Color(0xFF10B981))
+        AnalyticsChartCard("Energy Levels (Last 2 Weeks)", "Track your energy patterns") {
+            AnalyticsSimpleLineChart(values = energyValues, minY = 0f, maxY = 4f, lineColor = Color(0xFF10B981))
         }
     }
 }
@@ -173,7 +173,7 @@ internal fun PartnerModeScreen() {
 }
 
 @Composable
-private fun ChartCard(title: String, subtitle: String, content: @Composable ColumnScope.() -> Unit) {
+private fun AnalyticsChartCard(title: String, subtitle: String, content: @Composable ColumnScope.() -> Unit) {
     CardContainer {
         Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
         Text(subtitle, color = TextMuted, style = MaterialTheme.typography.bodyMedium)
@@ -183,7 +183,7 @@ private fun ChartCard(title: String, subtitle: String, content: @Composable Colu
 }
 
 @Composable
-private fun SingleBar(value: Float, label: String, color: Color) {
+private fun AnalyticsSingleBar(value: Float, label: String, color: Color) {
     val normalized = (value / 8f).coerceIn(0f, 1f)
     Column(
         modifier = Modifier
@@ -212,7 +212,7 @@ private fun SingleBar(value: Float, label: String, color: Color) {
 }
 
 @Composable
-private fun HorizontalBars(items: List<Pair<String, Float>>) {
+private fun AnalyticsHorizontalBars(items: List<Pair<String, Float>>) {
     val max = items.maxOfOrNull { it.second } ?: 1f
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -240,7 +240,7 @@ private fun HorizontalBars(items: List<Pair<String, Float>>) {
 }
 
 @Composable
-private fun MultiBars(items: List<Pair<String, Float>>) {
+private fun AnalyticsMultiBars(items: List<Pair<String, Float>>) {
     val max = items.maxOfOrNull { it.second } ?: 1f
     val colors = listOf(BrandPink, BrandPurple, Color(0xFF3B82F6), Color(0xFF10B981), Color(0xFFF59E0B), Color(0xFFEF4444), Color(0xFF8B5CF6))
     Row(
@@ -268,7 +268,7 @@ private fun MultiBars(items: List<Pair<String, Float>>) {
 }
 
 @Composable
-private fun SimpleLineChart(values: List<Float>, minY: Float, maxY: Float, lineColor: Color) {
+private fun AnalyticsSimpleLineChart(values: List<Float>, minY: Float, maxY: Float, lineColor: Color) {
     Column {
         Box(
             modifier = Modifier
