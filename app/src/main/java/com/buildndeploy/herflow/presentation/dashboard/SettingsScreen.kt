@@ -29,7 +29,6 @@ import androidx.compose.material.icons.outlined.MonitorHeart
 import androidx.compose.material.icons.outlined.ShowChart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -341,6 +340,53 @@ private fun AnalyticsSimpleLineChart(values: List<Float>, minY: Float, maxY: Flo
             Text("Mar 5", color = TextMuted, style = MaterialTheme.typography.labelSmall)
             Spacer(Modifier.weight(1f))
             Text("Mar 28", color = TextMuted, style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+private fun AnalyticsSimpleLineChart(values: List<Float>, minY: Float, maxY: Float, lineColor: Color) {
+    Column {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(188.dp)
+                .background(Color(0xFFF8FAFC), RoundedCornerShape(10.dp))
+                .padding(horizontal = 10.dp, vertical = 8.dp)
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                if (values.size < 2) return@Canvas
+                val stepX = size.width / (values.size - 1)
+                fun mapY(v: Float): Float = size.height - (((v - minY) / (maxY - minY)).coerceIn(0f, 1f) * size.height)
+
+                val horizontalLines = 4
+                repeat(horizontalLines + 1) { index ->
+                    val y = (size.height / horizontalLines) * index
+                    drawLine(
+                        color = Color(0xFFD9E1F1),
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = 1.2f
+                    )
+                }
+
+                val path = Path().apply {
+                    moveTo(0f, mapY(values.first()))
+                    values.drop(1).forEachIndexed { index, v ->
+                        lineTo((index + 1) * stepX, mapY(v))
+                    }
+                }
+                drawPath(path = path, color = lineColor, style = Stroke(width = 3.4f))
+                values.forEachIndexed { index, v ->
+                    drawCircle(color = lineColor, radius = 4.6f, center = Offset(index * stepX, mapY(v)))
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(String.format("%.1f", minY), color = TextMuted, style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.weight(1f))
+            Text(String.format("%.1f", maxY), color = TextMuted, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
