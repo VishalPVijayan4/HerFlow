@@ -343,6 +343,7 @@ private fun HomeScreen(
                         Text("Cycle Day", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
                         Text("31", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                     }
+                    Text("  Log your cycle data to get personalized insights.", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }
